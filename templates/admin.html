@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Gourmet Bookings</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .admin-section { padding: 20px; border-bottom: 1px solid #ccc; }
+        .hidden { display: none; }
+        input, textarea { display: block; margin: 10px 0; width: 100%; padding: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <header><h1>Admin Dashboard</h1></header>
+
+    <div class="container">
+        <div id="login-section">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button class="btn" onclick="login()">Login</button>
+        </div>
+
+        <div id="dashboard-section" class="hidden">
+            <div class="admin-section">
+                <h2>Add New Restaurant</h2>
+                <input type="text" id="res-name" placeholder="Restaurant Name">
+                <textarea id="res-desc" placeholder="Description"></textarea>
+                <input type="text" id="res-img" placeholder="Image URL">
+                <input type="text" id="res-slots" placeholder="Slots (comma separated, e.g., 18:00, 19:00)">
+                <button class="btn" onclick="addRestaurant()">Add Restaurant</button>
+            </div>
+
+            <div class="admin-section">
+                <h2>Current Bookings</h2>
+                <button class="btn" onclick="loadBookings()">Refresh Bookings</button>
+                <table id="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Restaurant</th>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let token = "";
+
+        async function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                token = data.access_token;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                loadBookings();
+            } else {
+                alert("Login Failed");
+            }
+        }
+
+        async function addRestaurant() {
+            const payload = {
+                name: document.getElementById('res-name').value,
+                description: document.getElementById('res-desc').value,
+                image_url: document.getElementById('res-img').value,
+                available_slots: document.getElementById('res-slots').value.split(',').map(s => s.trim())
+            };
+
+            const res = await fetch('/api/admin/restaurants', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Restaurant Added!");
+                location.reload();
+            }
+        }
+
+        async function loadBookings() {
+            const res = await fetch('/api/admin/bookings', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const bookings = await res.json();
+            const tbody = document.querySelector('#bookings-table tbody');
+            tbody.innerHTML = bookings.map(b => `
+                <tr>
+                    <td>${b.restaurant_name}</td>
+                    <td>${b.customer_name}</td>
+                    <td>${b.customer_phone}</td>
+                    <td>${b.time_slot}</td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

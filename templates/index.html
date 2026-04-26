@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gourmet Bookings</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Find Your Table</h1>
+    </header>
+    <div id="app" class="container">
+        <div id="restaurant-grid" class="grid"></div>
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">Book a Table</h2>
+            <div id="slots-container"></div>
+            <form id="booking-form" class="hidden">
+                <input type="hidden" id="selected-restaurant-id">
+                <input type="hidden" id="selected-time">
+                <input type="text" id="cust-name" placeholder="Full Name" required>
+                <input type="tel" id="cust-phone" placeholder="Phone Number" required>
+                <button type="submit" class="btn">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
