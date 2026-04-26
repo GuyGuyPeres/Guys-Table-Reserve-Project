@@ -5,10 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gourmet Bookings</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        header { position: relative; }
+        .admin-btn {
+            position: absolute;
+            top: 50%;
+            right: 2rem;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .admin-btn:hover { background: rgba(255,255,255,0.25); }
+    </style>
 </head>
 <body>
     <header>
         <h1>Find Your Table</h1>
+        <a href="/admin" class="admin-btn">Admin Login</a>
     </header>
     <div id="app" class="container">
         <div id="restaurant-grid" class="grid"></div>
