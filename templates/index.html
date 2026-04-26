@@ -1,52 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gourmet Bookings</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <style>
-        header { position: relative; }
-        .admin-btn {
-            position: absolute;
-            top: 50%;
-            right: 2rem;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.15);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.4);
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-        .admin-btn:hover { background: rgba(255,255,255,0.25); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guy's Dining Reservations</title>
+  <link rel="stylesheet" href="/static/style.css?v=3">
 </head>
 <body>
-    <header>
-        <h1>Find Your Table</h1>
-        <a href="/admin" class="admin-btn">Admin Login</a>
-    </header>
-    <div id="app" class="container">
-        <div id="restaurant-grid" class="grid"></div>
-    </div>
 
-    <div id="modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modal-title">Book a Table</h2>
-            <div id="slots-container"></div>
-            <form id="booking-form" class="hidden">
-                <input type="hidden" id="selected-restaurant-id">
-                <input type="hidden" id="selected-time">
-                <input type="text" id="cust-name" placeholder="Full Name" required>
-                <input type="tel" id="cust-phone" placeholder="Phone Number" required>
-                <button type="submit" class="btn">Confirm Booking</button>
-            </form>
-        </div>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="/" class="navbar-logo">Guy's Table <span>Reserve</span></a>
+    <div class="navbar-actions">
+      <a href="/admin" class="btn-ghost">Admin</a>
     </div>
-    <script src="/static/script.js"></script>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <p class="hero-eyebrow">Curated Fine Dining</p>
+    <h1 class="hero-title">Reserve Your<br><em>Perfect Evening</em></h1>
+    <p class="hero-subtitle">Discover exceptional restaurants and secure your table with effortless elegance.</p>
+    <a href="#restaurants" class="hero-cta">Explore Restaurants</a>
+    <div class="hero-scroll">
+      <div class="hero-scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- RESTAURANTS -->
+  <section class="section" id="restaurants">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Our Selection</p>
+        <h2 class="section-title">Featured <em>Establishments</em></h2>
+        <div class="section-divider"></div>
+      </div>
+      <div id="restaurant-grid" class="grid"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Guy's Table Reserve</div>
+    <p>&copy; 2026 Guy's Table Reserve. All rights reserved.</p>
+  </footer>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="modal-eyebrow">Reserve a Table</p>
+          <h2 class="modal-title" id="modal-title">Restaurant Name</h2>
+        </div>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Step 1: Date -->
+        <div id="step-date">
+          <p class="slots-label">Select a date</p>
+          <div class="form-group">
+            <input type="date" id="booking-date" class="form-input" onchange="onDateSelected()">
+          </div>
+        </div>
+
+        <!-- Step 2: Time slot (shown after date picked) -->
+        <div id="step-time" class="hidden">
+          <p class="slots-label">Select a time slot</p>
+          <div id="slots-container" class="slots-grid"></div>
+        </div>
+
+        <!-- Step 3: Details form (shown after slot picked) -->
+        <form id="booking-form" class="hidden">
+          <input type="hidden" id="selected-restaurant-id">
+          <input type="hidden" id="selected-time">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="cust-name" class="form-input" placeholder="Your full name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" id="cust-phone" class="form-input" placeholder="+972 50 000 0000" required>
+          </div>
+          <button type="submit" class="btn">Confirm Reservation</button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/script.js?v=3"></script>
 </body>
 </html>

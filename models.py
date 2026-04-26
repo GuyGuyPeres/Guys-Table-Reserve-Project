@@ -12,6 +12,7 @@ class BookingModel(BaseModel):
     customer_name: str
     customer_phone: str
     time_slot: str
+    booking_date: str  # format: YYYY-MM-DD
 
 class AdminUser(BaseModel):
     username: str

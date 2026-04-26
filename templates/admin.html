@@ -1,118 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard - Gourmet Bookings</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .admin-section { padding: 20px; border-bottom: 1px solid #ccc; }
-        .hidden { display: none; }
-        input, textarea { display: block; margin: 10px 0; width: 100%; padding: 8px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Guy's Table Reserve</title>
+  <link rel="stylesheet" href="/static/style.css?v=3">
 </head>
 <body>
-    <header><h1>Admin Dashboard</h1></header>
 
-    <div class="container">
-        <div id="login-section">
-            <h2>Login</h2>
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <button class="btn" onclick="login()">Login</button>
+  <!-- LOGIN PAGE -->
+  <div id="login-page">
+    <nav class="navbar">
+      <a href="/" class="navbar-logo">Guy's <span>Table Reserve</span></a>
+      <div class="navbar-actions">
+        <a href="/" class="btn-ghost">← Back to Site</a>
+      </div>
+    </nav>
+    <div class="admin-login">
+      <div class="login-box">
+        <div class="login-logo">Maison <span style="font-style:italic;color:var(--text)">Admin</span></div>
+        <p class="login-sub">Staff access only</p>
+        <div class="login-card">
+          <p class="login-title">Sign in to continue</p>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" id="username" class="form-input" placeholder="admin" autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <button class="btn" onclick="login()">Sign In</button>
         </div>
-
-        <div id="dashboard-section" class="hidden">
-            <div class="admin-section">
-                <h2>Add New Restaurant</h2>
-                <input type="text" id="res-name" placeholder="Restaurant Name">
-                <textarea id="res-desc" placeholder="Description"></textarea>
-                <input type="text" id="res-img" placeholder="Image URL">
-                <input type="text" id="res-slots" placeholder="Slots (comma separated, e.g., 18:00, 19:00)">
-                <button class="btn" onclick="addRestaurant()">Add Restaurant</button>
-            </div>
-
-            <div class="admin-section">
-                <h2>Current Bookings</h2>
-                <button class="btn" onclick="loadBookings()">Refresh Bookings</button>
-                <table id="bookings-table">
-                    <thead>
-                        <tr>
-                            <th>Restaurant</th>
-                            <th>Customer</th>
-                            <th>Phone</th>
-                            <th>Time</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        let token = "";
+  <!-- DASHBOARD -->
+  <div id="dashboard-page" class="hidden">
+    <nav class="navbar">
+      <a href="/" class="navbar-logo">Guy's <span>Table Reserve</span></a>
+      <div class="navbar-actions">
+        <a href="/" class="btn-ghost">← View Site</a>
+        <button class="btn-ghost" onclick="logout()">Sign Out</button>
+      </div>
+    </nav>
 
-        async function login() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            
-            const res = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, password: pass })
-            });
+    <div class="admin-layout">
+      <!-- SIDEBAR -->
+      <aside class="admin-sidebar">
+        <div class="sidebar-section">
+          <p class="sidebar-label">Management</p>
+          <nav class="sidebar-nav">
+            <button class="sidebar-link active" onclick="showPage('bookings', this)">
+              📋 &nbsp;Bookings
+            </button>
+            <button class="sidebar-link" onclick="showPage('add-restaurant', this)">
+              ➕ &nbsp;Add Restaurant
+            </button>
+          </nav>
+        </div>
+      </aside>
 
-            if (res.ok) {
-                const data = await res.json();
-                token = data.access_token;
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('dashboard-section').classList.remove('hidden');
-                loadBookings();
-            } else {
-                alert("Login Failed");
-            }
-        }
+      <!-- MAIN -->
+      <main class="admin-main">
 
-        async function addRestaurant() {
-            const payload = {
-                name: document.getElementById('res-name').value,
-                description: document.getElementById('res-desc').value,
-                image_url: document.getElementById('res-img').value,
-                available_slots: document.getElementById('res-slots').value.split(',').map(s => s.trim())
-            };
+        <!-- Bookings Page -->
+        <div id="page-bookings" class="admin-page active">
+          <h1 class="admin-page-title">Reservations</h1>
+          <p class="admin-page-sub">All current bookings across your restaurants.</p>
 
-            const res = await fetch('/api/admin/restaurants', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-            });
+          <div class="admin-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+              <p class="admin-card-title" style="margin:0">Current Bookings</p>
+              <button class="btn-ghost" onclick="loadBookings()" style="font-size:0.72rem;">↺ Refresh</button>
+            </div>
+            <div class="table-wrap">
+              <table id="bookings-table">
+                <thead>
+                  <tr>
+                    <th>Restaurant</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Date</th>
+                    <th>Time Slot</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="bookings-tbody">
+                  <tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:2rem;">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-            if (res.ok) {
-                alert("Restaurant Added!");
-                location.reload();
-            }
-        }
+        <!-- Add Restaurant Page -->
+        <div id="page-add-restaurant" class="admin-page">
+          <h1 class="admin-page-title">Add Restaurant</h1>
+          <p class="admin-page-sub">Register a new establishment on the platform.</p>
 
-        async function loadBookings() {
-            const res = await fetch('/api/admin/bookings', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const bookings = await res.json();
-            const tbody = document.querySelector('#bookings-table tbody');
-            tbody.innerHTML = bookings.map(b => `
-                <tr>
-                    <td>${b.restaurant_name}</td>
-                    <td>${b.customer_name}</td>
-                    <td>${b.customer_phone}</td>
-                    <td>${b.time_slot}</td>
-                </tr>
-            `).join('');
-        }
-    </script>
+          <div class="admin-card">
+            <p class="admin-card-title">Restaurant Details</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Restaurant Name</label>
+                <input type="text" id="res-name" class="form-input" placeholder="e.g. Le Jardin">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Image URL</label>
+                <input type="text" id="res-img" class="form-input" placeholder="https://...">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea id="res-desc" class="form-input" placeholder="A brief description of the restaurant..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Available Time Slots</label>
+              <input type="text" id="res-slots" class="form-input" value="12:00, 13:00, 14:00, 18:00, 19:00, 20:00, 21:00, 22:00">
+              <p style="font-size:0.72rem;color:var(--text-dim);margin-top:0.4rem;">Default slots pre-filled — edit as needed, separate with commas</p>
+            </div>
+            <button class="btn" onclick="addRestaurant()" style="width:auto;padding:0.85rem 2.5rem;">Add Restaurant</button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    let token = "";
+
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${type === 'success' ? '✓' : '✕'}</span>
+        <span class="toast-msg">${msg}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    async function login() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        token = data.access_token;
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('dashboard-page').classList.remove('hidden');
+        loadBookings();
+      } else {
+        showToast('Invalid credentials. Please try again.', 'error');
+      }
+    }
+
+    function logout() {
+      token = '';
+      document.getElementById('dashboard-page').classList.add('hidden');
+      document.getElementById('login-page').classList.remove('hidden');
+    }
+
+    function showPage(name, btn) {
+      document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      document.getElementById(`page-${name}`).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    async function addRestaurant() {
+      const name = document.getElementById('res-name').value.trim();
+      if (!name) { showToast('Please enter a restaurant name.', 'error'); return; }
+
+      const payload = {
+        name,
+        description: document.getElementById('res-desc').value,
+        image_url: document.getElementById('res-img').value,
+        available_slots: document.getElementById('res-slots').value.split(',').map(s => s.trim()).filter(Boolean)
+      };
+
+      const res = await fetch('/api/admin/restaurants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        showToast(`"${name}" added successfully!`);
+        document.getElementById('res-name').value = '';
+        document.getElementById('res-desc').value = '';
+        document.getElementById('res-img').value = '';
+        // Reset slots back to defaults
+        document.getElementById('res-slots').value = '12:00, 13:00, 14:00, 18:00, 19:00, 20:00, 21:00, 22:00';
+      } else {
+        showToast('Failed to add restaurant.', 'error');
+      }
+    }
+
+    async function loadBookings() {
+      const res = await fetch('/api/admin/bookings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const bookings = await res.json();
+      const tbody = document.getElementById('bookings-tbody');
+
+      if (!bookings.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:2rem;">No bookings yet.</td></tr>`;
+        return;
+      }
+
+      // Sort by date then time
+      bookings.sort((a, b) => {
+        const dateCompare = (a.booking_date || '').localeCompare(b.booking_date || '');
+        return dateCompare !== 0 ? dateCompare : (a.time_slot || '').localeCompare(b.time_slot || '');
+      });
+
+      tbody.innerHTML = bookings.map(b => `
+        <tr>
+          <td><span style="color:var(--text)">${b.restaurant_name}</span></td>
+          <td>${b.customer_name}</td>
+          <td>${b.customer_phone}</td>
+          <td><span class="badge">${b.booking_date ? formatDate(b.booking_date) : '—'}</span></td>
+          <td><span class="badge">${b.time_slot}</span></td>
+          <td>
+            <button class="btn btn-danger" onclick="deleteBooking('${b.id}', this)">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function formatDate(dateStr) {
+      const [y, m, d] = dateStr.split('-');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+    }
+
+    async function deleteBooking(id, btn) {
+      const row = btn.closest('tr');
+      const res = await fetch(`/api/admin/bookings/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        row.style.opacity = '0';
+        row.style.transition = 'opacity 0.3s';
+        setTimeout(() => { row.remove(); }, 300);
+        showToast('Booking deleted.');
+      } else {
+        showToast('Failed to delete booking.', 'error');
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !document.getElementById('login-page').classList.contains('hidden')) {
+        login();
+      }
+    });
+  </script>
 </body>
 </html>
