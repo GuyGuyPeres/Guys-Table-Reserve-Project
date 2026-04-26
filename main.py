@@ -50,7 +50,6 @@ async def book_table(booking: BookingModel):
     if result.modified_count == 0:
         raise HTTPException(status_code=400, detail="Time slot already taken or restaurant not found.")
     
-    # FIX: Use model_dump() instead of dict() for Pydantic v2
     booking_data = booking.model_dump()
     res_info = await restaurants_collection.find_one({"_id": ObjectId(booking.restaurant_id)})
     booking_data["restaurant_name"] = res_info["name"]
@@ -83,7 +82,7 @@ async def admin_page(request: Request):
 
 @app.post("/api/admin/restaurants", dependencies=[Depends(get_current_admin)])
 async def add_restaurant(res: RestaurantModel):
-    # FIX: Use model_dump() instead of dict()
+
     new_res = await restaurants_collection.insert_one(res.model_dump())
     return {"id": str(new_res.inserted_id)}
 
