@@ -297,8 +297,6 @@ JSON Response  ◄── Exception Handler ◄── try/except (500 on DB failu
 ---
 
 
----
-
 <div align="center">
 
 Made with ☕ and some hours in class.
