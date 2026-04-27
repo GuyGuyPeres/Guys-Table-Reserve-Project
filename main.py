@@ -11,7 +11,6 @@ from database import restaurants_collection, bookings_collection, admins_collect
 from models import RestaurantModel, BookingModel, CancelBookingRequest, AdminUser
 from auth import hash_password, verify_password, create_access_token, get_current_admin
 from config import settings
-from sms_utils import send_booking_sms
 from contextlib import asynccontextmanager
 import uvicorn
 
@@ -130,17 +129,6 @@ async def book_table(request: Request, booking: BookingModel):
         insert_result = await bookings_collection.insert_one(booking_data)
         booking_id = str(insert_result.inserted_id)
         logger.info(f"Booking {booking_id} created for '{res_info['name']}' on {booking.booking_date}")
-
-        await send_booking_sms(
-            to_phone=booking.customer_phone,
-            customer_name=booking.customer_name,
-            restaurant_name=res_info["name"],
-            booking_date=booking.booking_date,
-            time_slot=booking.time_slot,
-            guest_count=booking.guest_count,
-            booking_id=booking_id,
-        )
-
         return {"status": "success", "booking_id": booking_id}
     except HTTPException:
         raise
