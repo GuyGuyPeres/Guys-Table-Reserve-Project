@@ -85,11 +85,12 @@
                     <th>Date</th>
                     <th>Time Slot</th>
                     <th>Guests</th>
+                    <th>Booking ID</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="bookings-tbody">
-                  <tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:2rem;">Loading...</td></tr>
+                  <tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:2rem;">Loading...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -237,7 +238,7 @@
       const tbody = document.getElementById('bookings-tbody');
 
       if (!bookings.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:2rem;">No bookings yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:2rem;">No bookings yet.</td></tr>`;
         return;
       }
 
@@ -255,6 +256,10 @@
           <td><span class="badge">${b.time_slot}</span></td>
           <td>${b.guest_count || '—'}</td>
           <td>
+            <span style="font-family:monospace;font-size:0.75rem;color:var(--text-muted)" title="${b.id}">${b.id.slice(0, 8)}…</span>
+            <button onclick="copyId('${b.id}', this)" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.75rem;margin-left:0.3rem;transition:color 0.2s" title="Copy full ID">⎘</button>
+          </td>
+          <td>
             <button class="btn btn-danger" onclick="deleteBooking('${b.id}', this)">Delete</button>
           </td>
         </tr>
@@ -270,6 +275,15 @@
     function changePage(delta) {
       const newPage = currentPage + delta;
       if (newPage >= 1 && newPage <= totalPages) loadBookings(newPage);
+    }
+
+    function copyId(id, btn) {
+      navigator.clipboard.writeText(id).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓';
+        btn.style.color = 'var(--success)';
+        setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+      });
     }
 
     function formatDate(dateStr) {
