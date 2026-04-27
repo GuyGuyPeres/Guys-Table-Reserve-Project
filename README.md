@@ -296,28 +296,15 @@ JSON Response  ◄── Exception Handler ◄── try/except (500 on DB failu
 
 ---
 
-## 🤝 Contributing
-
-<details>
-<summary>📐 <strong>Code Style Guidelines</strong></summary>
-
-- **Naming** — `snake_case` for variables and functions; Pydantic model classes in `PascalCase`.
-- **Function responsibility** — Each route handler does one thing. Extract shared logic (e.g. `to_object_id`) into standalone helpers.
-- **Error handling** — Always re-raise `HTTPException` after catching it; never silently swallow errors. Log with `logger.error()` before raising a 500.
-- **Type hints** — All function signatures must be typed; use `str`, `int`, `ObjectId`, Pydantic models as appropriate.
-- **Async** — All database calls must `await` Motor coroutines. Never use synchronous PyMongo inside a route.
-- **Environment** — All secrets and config go in `.env` and are accessed only through `config.settings`. Never hardcode values.
-
-</details>
 
 ---
 
 <div align="center">
 
-Made with ☕ and way too many late nights
+Made with ☕ and some hours in class.
 
 ⭐ **If this project helped you, consider giving it a star!** ⭐
 
-Built with 💻 by [CaptainPeres](https://github.com/CaptainPeres)
+Built with 💻 by [CaptainPeres](https://github.com/GuyGuyPeres)
 
 </div>
