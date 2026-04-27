@@ -1,164 +1,323 @@
-# Guy's Table Reserve
+<div align="center">
 
-A full-stack restaurant table reservation system built with FastAPI and MongoDB. Customers can browse restaurants and book tables; admins manage reservations through a protected dashboard.
+![Banner](https://placehold.co/900x200/0c0d0f/c9a84c?text=Guy%27s+Table+Reserve&font=montserrat)
 
----
+# 🍽️ Guy's Table Reserve
 
-## Features
+### A sleek, full-stack restaurant reservation system — book a table in seconds, manage everything from one dashboard.
 
-**Customer-facing**
-- Browse restaurants with images and descriptions
-- Multi-step booking flow: pick a date → pick a time slot → enter details
-- Guest count selection (1–20)
-- Booking confirmation with a unique Booking ID shown after confirming
-- Cancel any reservation using the Booking ID + phone number used when booking
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.136.1-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-c9a84c?style=for-the-badge)
+![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)
 
-**Admin dashboard**
-- JWT-protected login
-- View all bookings across all restaurants (paginated, 50 per page)
-- Copy any Booking ID with one click
-- Delete bookings
-- Add new restaurants with custom time slots
-
-**Technical**
-- Rate limiting: 10 bookings/min and 5 login attempts/min per IP
-- MongoDB indexes on `booking_date`, `customer_phone`, and `restaurant_id`
-- Full error handling and structured logging on all endpoints
-- Input validation on all IDs before database queries
+</div>
 
 ---
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Backend | Python 3.11+, FastAPI, Uvicorn |
-| Database | MongoDB Atlas (Motor async driver) |
-| Auth | JWT (python-jose), bcrypt (passlib) |
-| Frontend | HTML5, Vanilla JS, CSS3 (no framework) |
-| Templating | Jinja2 |
+## 📖 Table of Contents
+- [Tech Stack](#-tech-stack)
+- [Key Features](#-key-features)
+- [Getting Started](#-getting-started)
+- [Usage](#-usage)
+- [Architecture](#-architecture)
+- [Contributing](#-contributing)
 
 ---
 
-## Setup
+## 🛠 Tech Stack
 
-### 1. Clone and create a virtual environment
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Language | Python | 3.11+ |
+| Framework | FastAPI | 0.136.1 |
+| ASGI Server | Uvicorn | 0.46.0 |
+| Database | MongoDB Atlas (Motor async driver) | Motor 3.7.1 |
+| Authentication | JWT (python-jose) + bcrypt (passlib) | jose 3.5.0 |
+| Data Validation | Pydantic | 2.13.3 |
+| Templating | Jinja2 | 3.1.6 |
+| Frontend | HTML5, Vanilla JS, CSS3 | — |
+| Environment | python-dotenv | 1.2.2 |
 
-```bash
-git clone <repo-url>
-cd RestaurantProject
-python -m venv .venv
-.venv\Scripts\activate      # Windows
-# source .venv/bin/activate  # Mac/Linux
-```
+---
 
-### 2. Install dependencies
+## ✨ Key Features
 
-```bash
-pip install -r requirements.txt
-```
+- **Multi-step booking flow** — Customers select a date, pick an available time slot, enter their details and guest count, all in a clean modal without leaving the page.
+- **Booking ID + self-cancellation** — Every confirmed reservation returns a unique Booking ID. Customers can cancel at any time using their ID and phone number — no account required.
+- **JWT-protected admin dashboard** — Admins log in with credentials from `.env`; all management endpoints require a signed token, verified on every request.
+- **Paginated reservations table** — Admin bookings load 50 per page with Prev/Next controls and a one-click copy button for each Booking ID.
+- **Rate limiting** — Booking endpoint is capped at 10 requests/min per IP; login at 5/min — built-in, no external dependency required.
+- **MongoDB indexes** — Indexes on `booking_date`, `customer_phone`, and `restaurant_id` are created at startup so queries stay fast as the database grows.
+- **Full error handling** — Every route wraps MongoDB operations in try/except; invalid ObjectIds are caught before hitting the database; all errors return structured JSON.
+- **Structured logging** — Timestamped log lines for every key event: startup, new bookings, admin logins, failed attempts, and errors.
+- **Time slot integrity** — Slots are atomically pulled from the restaurant document on booking and restored on cancellation, preventing double-bookings.
 
-### 3. Configure environment variables
+---
 
-Create a `.env` file in the project root (it is already gitignored):
+## 🚀 Getting Started
 
-```env
-MONGO_URI=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/restaurant_booking?retryWrites=true&w=majority
-SECRET_KEY=replace_with_a_long_random_string
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your_secure_password
-```
+### Prerequisites
 
-> **Tip:** Generate a strong `SECRET_KEY` with:
-> ```bash
-> python -c "import secrets; print(secrets.token_hex(32))"
-> ```
+- [Python 3.11+](https://www.python.org/downloads/)
+- [MongoDB Atlas account](https://www.mongodb.com/cloud/atlas) (free tier works fine)
+- A terminal / command prompt
 
-### 4. Run the server
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/CaptainPeres/RestaurantProject.git
+   cd RestaurantProject
+   ```
+
+2. **Create and activate a virtual environment**
+   ```bash
+   # macOS / Linux
+   python3 -m venv .venv
+   source .venv/bin/activate
+
+   # Windows
+   python -m venv .venv
+   .venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure environment variables**
+
+   Create a `.env` file in the project root:
+   ```env
+   MONGO_URI=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/restaurant_booking?retryWrites=true&w=majority
+   SECRET_KEY=replace_with_a_long_random_string
+   ALGORITHM=HS256
+   ACCESS_TOKEN_EXPIRE_MINUTES=60
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD=your_secure_password
+   ```
+
+   > ⚠️ **Never commit `.env` to version control.** It is already listed in `.gitignore`.
+
+   Generate a strong `SECRET_KEY` with:
+   ```bash
+   python -c "import secrets; print(secrets.token_hex(32))"
+   ```
+
+<details>
+<summary>🔧 <strong>Troubleshooting</strong></summary>
+
+- **`ServerSelectionTimeoutError`** — Check your `MONGO_URI`. Make sure your IP is whitelisted in MongoDB Atlas under Network Access.
+- **`ModuleNotFoundError`** — Make sure your virtual environment is activated before running `pip install`.
+- **`RuntimeError: ADMIN_USERNAME and ADMIN_PASSWORD must be set`** — Your `.env` file is missing or not being loaded. Confirm the file is in the project root (same folder as `main.py`).
+- **Port already in use** — Another process is on port 8000. Stop it or change the port in `main.py`: `uvicorn.run(app, host="0.0.0.0", port=8001)`.
+
+</details>
+
+### Run the App
 
 ```bash
 python main.py
 ```
 
-The app will be available at `http://localhost:8000`.  
-The admin dashboard is at `http://localhost:8000/admin`.
+App runs at → **http://localhost:8000**  
+Admin dashboard → **http://localhost:8000/admin**
 
-On first startup, the default admin account is created automatically using the credentials in `.env`.
+### Run Tests
+
+> No automated tests are included yet. Contributions welcome — see [Contributing](#-contributing).
 
 ---
 
-## API Reference
+## 💡 Usage
 
-### Public
+All API endpoints are served at `http://localhost:8000`. Request and response bodies use `application/json`.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/restaurants` | List all restaurants |
-| `POST` | `/api/book` | Create a booking |
-| `DELETE` | `/api/bookings/{id}` | Cancel a booking (requires matching phone) |
+### Endpoints Overview
 
-**POST `/api/book` body:**
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `GET` | `/api/restaurants` | — | List all restaurants |
+| `POST` | `/api/book` | — | Create a booking |
+| `DELETE` | `/api/bookings/{id}` | — | Cancel a booking (phone verification) |
+| `POST` | `/api/admin/login` | — | Get a JWT token |
+| `GET` | `/api/admin/bookings` | Bearer token | List bookings (paginated) |
+| `DELETE` | `/api/admin/bookings/{id}` | Bearer token | Delete a booking |
+| `POST` | `/api/admin/restaurants` | Bearer token | Add a new restaurant |
+
+---
+
+### POST `/api/book`
+
+```bash
+curl -X POST http://localhost:8000/api/book \
+  -H "Content-Type: application/json" \
+  -d '{
+    "restaurant_id": "64f1a2b3c4d5e6f7a8b9c0d1",
+    "customer_name": "Guy Peres",
+    "customer_phone": "0529918459",
+    "time_slot": "19:00",
+    "booking_date": "2026-05-10",
+    "guest_count": 2
+  }'
+```
+
+**Response** `201`
 ```json
 {
-  "restaurant_id": "64f1a2b3c4d5e6f7a8b9c0d1",
-  "customer_name": "Guy Peres",
-  "customer_phone": "0529918459",
-  "time_slot": "19:00",
-  "booking_date": "2026-05-10",
-  "guest_count": 2
+  "status": "success",
+  "booking_id": "6650fa3e2b1c4a0012abcdef"
 }
 ```
 
-**DELETE `/api/bookings/{id}` body:**
+---
+
+### DELETE `/api/bookings/{booking_id}`
+
+```bash
+curl -X DELETE http://localhost:8000/api/bookings/6650fa3e2b1c4a0012abcdef \
+  -H "Content-Type: application/json" \
+  -d '{ "customer_phone": "0529918459" }'
+```
+
+**Response** `200`
 ```json
-{ "customer_phone": "0529918459" }
-```
-
-### Admin (requires `Authorization: Bearer <token>`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/admin/login` | Get JWT token |
-| `GET` | `/api/admin/bookings` | List bookings (paginated) |
-| `DELETE` | `/api/admin/bookings/{id}` | Delete a booking |
-| `POST` | `/api/admin/restaurants` | Add a new restaurant |
-
-**GET `/api/admin/bookings` query params:**
-- `page` (default: 1)
-- `limit` (default: 50, max: 200)
-
----
-
-## Project Structure
-
-```
-RestaurantProject/
-├── main.py              # FastAPI app, all routes
-├── models.py            # Pydantic request/response models
-├── auth.py              # JWT creation and verification
-├── database.py          # MongoDB connection and collections
-├── config.py            # Environment variable loader
-├── requirements.txt
-├── .env                 # Secrets — never commit this
-├── static/
-│   ├── script.js        # Customer-facing booking logic
-│   └── style.css        # Dark luxury theme
-└── templates/
-    ├── index.html       # Customer homepage
-    └── admin.html       # Admin dashboard
+{ "status": "cancelled" }
 ```
 
 ---
 
-## Environment Variables
+### POST `/api/admin/login`
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGO_URI` | Yes | MongoDB Atlas connection string |
-| `SECRET_KEY` | Yes | Secret used to sign JWT tokens |
-| `ALGORITHM` | Yes | JWT algorithm (use `HS256`) |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Yes | Token lifetime in minutes |
-| `ADMIN_USERNAME` | Yes | Username for the admin account |
-| `ADMIN_PASSWORD` | Yes | Password for the admin account |
+```bash
+curl -X POST http://localhost:8000/api/admin/login \
+  -H "Content-Type: application/json" \
+  -d '{ "username": "admin", "password": "your_secure_password" }'
+```
+
+**Response** `200`
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+---
+
+### GET `/api/admin/bookings`
+
+```bash
+curl http://localhost:8000/api/admin/bookings?page=1&limit=50 \
+  -H "Authorization: Bearer <token>"
+```
+
+**Response** `200`
+```json
+{
+  "bookings": [ { "id": "...", "restaurant_name": "...", "customer_name": "...", "booking_date": "2026-05-10", "time_slot": "19:00", "guest_count": 2 } ],
+  "total": 120,
+  "page": 1,
+  "limit": 50,
+  "pages": 3
+}
+```
+
+---
+
+### Error Responses
+
+All errors return this shape:
+```json
+{ "detail": "Human-readable error message" }
+```
+
+| Status | Meaning |
+|--------|---------|
+| `400` | Bad request (slot taken, invalid ID format) |
+| `401` | Invalid or missing credentials |
+| `403` | Phone number does not match booking |
+| `404` | Booking not found |
+| `429` | Rate limit exceeded |
+| `500` | Internal server error (logged server-side) |
+
+---
+
+## 🏗 Architecture
+
+### Folder Structure
+
+```text
+📁 RestaurantProject/
+├── 📄 main.py            # FastAPI app — all routes, rate limiter, lifespan
+├── 📄 models.py          # Pydantic models (BookingModel, RestaurantModel, etc.)
+├── 📄 auth.py            # JWT creation & verification, bcrypt helpers
+├── 📄 database.py        # MongoDB client + collection handles
+├── 📄 config.py          # Loads all env vars via python-dotenv
+├── 📄 requirements.txt
+├── 📄 .env               # Secrets — never commit ⚠️
+├── 📁 static/
+│   ├── 📄 script.js      # Booking flow, cancellation, toast notifications
+│   └── 📄 style.css      # Dark luxury theme (CSS variables, animations)
+└── 📁 templates/
+    ├── 📄 index.html     # Customer homepage — restaurant grid + booking modal
+    └── 📄 admin.html     # Admin dashboard — login, bookings table, add restaurant
+```
+
+### Request Flow
+
+```
+HTTP Request
+     │
+     ▼
+FastAPI Router (main.py)
+     │
+     ├─ RateLimiter.is_allowed(ip) ──✗──► 429 Too Many Requests
+     │
+     ├─ Pydantic validation ──────────✗──► 422 Unprocessable Entity
+     │
+     ├─ to_object_id() ──────────────✗──► 400 Invalid ID
+     │
+     ├─ JWT Auth / get_current_admin ─✗──► 401 Unauthorized
+     │
+     ▼
+Motor (async MongoDB driver)
+     │
+     ▼
+MongoDB Atlas
+     │
+     ▼
+JSON Response  ◄── Exception Handler ◄── try/except (500 on DB failure)
+```
+
+---
+
+## 🤝 Contributing
+
+<details>
+<summary>📐 <strong>Code Style Guidelines</strong></summary>
+
+- **Naming** — `snake_case` for variables and functions; Pydantic model classes in `PascalCase`.
+- **Function responsibility** — Each route handler does one thing. Extract shared logic (e.g. `to_object_id`) into standalone helpers.
+- **Error handling** — Always re-raise `HTTPException` after catching it; never silently swallow errors. Log with `logger.error()` before raising a 500.
+- **Type hints** — All function signatures must be typed; use `str`, `int`, `ObjectId`, Pydantic models as appropriate.
+- **Async** — All database calls must `await` Motor coroutines. Never use synchronous PyMongo inside a route.
+- **Environment** — All secrets and config go in `.env` and are accessed only through `config.settings`. Never hardcode values.
+
+</details>
+
+---
+
+<div align="center">
+
+Made with ☕ and way too many late nights
+
+⭐ **If this project helped you, consider giving it a star!** ⭐
+
+Built with 💻 by [CaptainPeres](https://github.com/CaptainPeres)
+
+</div>
