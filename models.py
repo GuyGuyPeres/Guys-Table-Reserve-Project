@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List
 
 class RestaurantModel(BaseModel):
@@ -13,6 +13,10 @@ class BookingModel(BaseModel):
     customer_phone: str
     time_slot: str
     booking_date: str  # format: YYYY-MM-DD
+    guest_count: int = Field(default=2, ge=1, le=20)
+
+class CancelBookingRequest(BaseModel):
+    customer_phone: str
 
 class AdminUser(BaseModel):
     username: str

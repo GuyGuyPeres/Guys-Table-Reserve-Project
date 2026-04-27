@@ -84,13 +84,19 @@
                     <th>Phone</th>
                     <th>Date</th>
                     <th>Time Slot</th>
+                    <th>Guests</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="bookings-tbody">
-                  <tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:2rem;">Loading...</td></tr>
+                  <tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:2rem;">Loading...</td></tr>
                 </tbody>
               </table>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:center; gap:1.5rem; margin-top:1.5rem;">
+              <button class="btn-ghost" id="prev-page" onclick="changePage(-1)" disabled>← Prev</button>
+              <span id="page-info" style="color:var(--text-muted);font-size:0.8rem;">Page 1 of 1</span>
+              <button class="btn-ghost" id="next-page" onclick="changePage(1)" disabled>Next →</button>
             </div>
           </div>
         </div>
@@ -134,6 +140,8 @@
 
   <script>
     let token = "";
+    let currentPage = 1;
+    let totalPages = 1;
 
     function showToast(msg, type = 'success') {
       const container = document.getElementById('toast-container');
@@ -216,19 +224,23 @@
       }
     }
 
-    async function loadBookings() {
-      const res = await fetch('/api/admin/bookings', {
+    async function loadBookings(page = 1) {
+      const res = await fetch(`/api/admin/bookings?page=${page}&limit=50`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const bookings = await res.json();
+      const data = await res.json();
+      currentPage = data.page;
+      totalPages = data.pages;
+      updatePagination();
+
+      const bookings = data.bookings;
       const tbody = document.getElementById('bookings-tbody');
 
       if (!bookings.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:2rem;">No bookings yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:2rem;">No bookings yet.</td></tr>`;
         return;
       }
 
-      // Sort by date then time
       bookings.sort((a, b) => {
         const dateCompare = (a.booking_date || '').localeCompare(b.booking_date || '');
         return dateCompare !== 0 ? dateCompare : (a.time_slot || '').localeCompare(b.time_slot || '');
@@ -241,11 +253,23 @@
           <td>${b.customer_phone}</td>
           <td><span class="badge">${b.booking_date ? formatDate(b.booking_date) : '—'}</span></td>
           <td><span class="badge">${b.time_slot}</span></td>
+          <td>${b.guest_count || '—'}</td>
           <td>
             <button class="btn btn-danger" onclick="deleteBooking('${b.id}', this)">Delete</button>
           </td>
         </tr>
       `).join('');
+    }
+
+    function updatePagination() {
+      document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById('prev-page').disabled = currentPage <= 1;
+      document.getElementById('next-page').disabled = currentPage >= totalPages;
+    }
+
+    function changePage(delta) {
+      const newPage = currentPage + delta;
+      if (newPage >= 1 && newPage <= totalPages) loadBookings(newPage);
     }
 
     function formatDate(dateStr) {

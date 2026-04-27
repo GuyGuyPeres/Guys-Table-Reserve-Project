@@ -42,6 +42,29 @@
     </div>
   </section>
 
+  <!-- CANCEL BOOKING -->
+  <section class="section" id="cancel-booking">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Need to change plans?</p>
+        <h2 class="section-title">Cancel Your <em>Reservation</em></h2>
+        <div class="section-divider"></div>
+      </div>
+      <div class="cancel-box">
+        <p class="slots-label" style="margin-bottom:1.5rem;">Enter your booking ID and the phone number you used when booking</p>
+        <div class="form-group">
+          <label class="form-label">Booking ID</label>
+          <input type="text" id="cancel-id" class="form-input" placeholder="e.g. 6650fa3e2b1c4a0012abcdef">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" id="cancel-phone" class="form-input" placeholder="+972 50 000 0000">
+        </div>
+        <button class="btn" onclick="cancelBooking()">Cancel Reservation</button>
+      </div>
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer>
     <div class="footer-logo">Guy's Table Reserve</div>
@@ -85,6 +108,10 @@
           <div class="form-group">
             <label class="form-label">Phone Number</label>
             <input type="tel" id="cust-phone" class="form-input" placeholder="+972 50 000 0000" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Number of Guests</label>
+            <input type="number" id="cust-guests" class="form-input" min="1" max="20" value="2" required>
           </div>
           <button type="submit" class="btn">Confirm Reservation</button>
         </form>

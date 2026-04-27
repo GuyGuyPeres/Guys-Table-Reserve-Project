@@ -70,6 +70,7 @@ function openBooking(id) {
   bookingForm.classList.add('hidden');
   document.getElementById('cust-name').value = '';
   document.getElementById('cust-phone').value = '';
+  document.getElementById('cust-guests').value = '2';
 
   modal.classList.add('visible');
   document.body.style.overflow = 'hidden';
@@ -137,7 +138,8 @@ bookingForm.onsubmit = async (e) => {
     time_slot: document.getElementById('selected-time').value,
     booking_date: bookingDate,
     customer_name: document.getElementById('cust-name').value,
-    customer_phone: document.getElementById('cust-phone').value
+    customer_phone: document.getElementById('cust-phone').value,
+    guest_count: parseInt(document.getElementById('cust-guests').value) || 2
   };
 
   const res = await fetch('/api/book', {
@@ -147,13 +149,45 @@ bookingForm.onsubmit = async (e) => {
   });
 
   if (res.ok) {
+    const data = await res.json();
     closeModal();
-    showToast('Your reservation has been confirmed!');
+    showToast(`Confirmed! Save your Booking ID: ${data.booking_id}`);
     setTimeout(() => loadRestaurants(), 500);
   } else {
     const err = await res.json();
     showToast(err.detail || 'Something went wrong.', 'error');
   }
 };
+
+// ── CANCEL BOOKING ──
+async function cancelBooking() {
+  const bookingId = document.getElementById('cancel-id').value.trim();
+  const phone = document.getElementById('cancel-phone').value.trim();
+
+  if (!bookingId || !phone) {
+    showToast('Please enter your booking ID and phone number.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customer_phone: phone })
+    });
+
+    if (res.ok) {
+      document.getElementById('cancel-id').value = '';
+      document.getElementById('cancel-phone').value = '';
+      showToast('Your reservation has been cancelled.');
+      setTimeout(() => loadRestaurants(), 500);
+    } else {
+      const err = await res.json();
+      showToast(err.detail || 'Cancellation failed.', 'error');
+    }
+  } catch {
+    showToast('Network error. Please try again.', 'error');
+  }
+}
 
 loadRestaurants();
