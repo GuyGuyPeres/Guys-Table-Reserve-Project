@@ -4,7 +4,7 @@
 
 # 🍽️ Guy's Table Reserve
 
-### A sleek, full-stack restaurant reservation system — book a table in seconds, manage everything from one dashboard.
+### A sleek, full-stack restaurant reservation system - book a table in seconds, manage everything from one dashboard.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.136.1-009688?style=for-the-badge&logo=fastapi&logoColor=white)
@@ -38,22 +38,22 @@
 | Authentication | JWT (python-jose) + bcrypt (passlib) | jose 3.5.0 |
 | Data Validation | Pydantic | 2.13.3 |
 | Templating | Jinja2 | 3.1.6 |
-| Frontend | HTML5, Vanilla JS, CSS3 | — |
+| Frontend | HTML5, Vanilla JS, CSS3 | - |
 | Environment | python-dotenv | 1.2.2 |
 
 ---
 
 ## ✨ Key Features
 
-- **Multi-step booking flow** — Customers select a date, pick an available time slot, enter their details and guest count, all in a clean modal without leaving the page.
-- **Booking ID + self-cancellation** — Every confirmed reservation returns a unique Booking ID. Customers can cancel at any time using their ID and phone number — no account required.
-- **JWT-protected admin dashboard** — Admins log in with credentials from `.env`; all management endpoints require a signed token, verified on every request.
-- **Paginated reservations table** — Admin bookings load 50 per page with Prev/Next controls and a one-click copy button for each Booking ID.
-- **Rate limiting** — Booking endpoint is capped at 10 requests/min per IP; login at 5/min — built-in, no external dependency required.
-- **MongoDB indexes** — Indexes on `booking_date`, `customer_phone`, and `restaurant_id` are created at startup so queries stay fast as the database grows.
-- **Full error handling** — Every route wraps MongoDB operations in try/except; invalid ObjectIds are caught before hitting the database; all errors return structured JSON.
-- **Structured logging** — Timestamped log lines for every key event: startup, new bookings, admin logins, failed attempts, and errors.
-- **Time slot integrity** — Slots are atomically pulled from the restaurant document on booking and restored on cancellation, preventing double-bookings.
+- **Multi-step booking flow** - Customers select a date, pick an available time slot, enter their details and guest count, all in a clean modal without leaving the page.
+- **Booking ID + self-cancellation** - Every confirmed reservation returns a unique Booking ID. Customers can cancel at any time using their ID and phone number - no account required.
+- **JWT-protected admin dashboard** - Admins log in with credentials from `.env`; all management endpoints require a signed token, verified on every request.
+- **Paginated reservations table** - Admin bookings load 50 per page with Prev/Next controls and a one-click copy button for each Booking ID.
+- **Rate limiting** - Booking endpoint is capped at 10 requests/min per IP; login at 5/min - built-in, no external dependency required.
+- **MongoDB indexes** - Indexes on `booking_date`, `customer_phone`, and `restaurant_id` are created at startup so queries stay fast as the database grows.
+- **Full error handling** - Every route wraps MongoDB operations in try/except; invalid ObjectIds are caught before hitting the database; all errors return structured JSON.
+- **Structured logging** - Timestamped log lines for every key event: startup, new bookings, admin logins, failed attempts, and errors.
+- **Time slot integrity** - Slots are atomically pulled from the restaurant document on booking and restored on cancellation, preventing double-bookings.
 
 ---
 
@@ -111,10 +111,10 @@
 <details>
 <summary>🔧 <strong>Troubleshooting</strong></summary>
 
-- **`ServerSelectionTimeoutError`** — Check your `MONGO_URI`. Make sure your IP is whitelisted in MongoDB Atlas under Network Access.
-- **`ModuleNotFoundError`** — Make sure your virtual environment is activated before running `pip install`.
-- **`RuntimeError: ADMIN_USERNAME and ADMIN_PASSWORD must be set`** — Your `.env` file is missing or not being loaded. Confirm the file is in the project root (same folder as `main.py`).
-- **Port already in use** — Another process is on port 8000. Stop it or change the port in `main.py`: `uvicorn.run(app, host="0.0.0.0", port=8001)`.
+- **`ServerSelectionTimeoutError`** - Check your `MONGO_URI`. Make sure your IP is whitelisted in MongoDB Atlas under Network Access.
+- **`ModuleNotFoundError`** - Make sure your virtual environment is activated before running `pip install`.
+- **`RuntimeError: ADMIN_USERNAME and ADMIN_PASSWORD must be set`** - Your `.env` file is missing or not being loaded. Confirm the file is in the project root (same folder as `main.py`).
+- **Port already in use** - Another process is on port 8000. Stop it or change the port in `main.py`: `uvicorn.run(app, host="0.0.0.0", port=8001)`.
 
 </details>
 
@@ -137,10 +137,10 @@ All API endpoints are served at `http://localhost:8000`. Request and response bo
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| `GET` | `/api/restaurants` | — | List all restaurants |
-| `POST` | `/api/book` | — | Create a booking |
-| `DELETE` | `/api/bookings/{id}` | — | Cancel a booking (phone verification) |
-| `POST` | `/api/admin/login` | — | Get a JWT token |
+| `GET` | `/api/restaurants` | - | List all restaurants |
+| `POST` | `/api/book` | - | Create a booking |
+| `DELETE` | `/api/bookings/{id}` | - | Cancel a booking (phone verification) |
+| `POST` | `/api/admin/login` | - | Get a JWT token |
 | `GET` | `/api/admin/bookings` | Bearer token | List bookings (paginated) |
 | `DELETE` | `/api/admin/bookings/{id}` | Bearer token | Delete a booking |
 | `POST` | `/api/admin/restaurants` | Bearer token | Add a new restaurant |
@@ -249,19 +249,19 @@ All errors return this shape:
 
 ```text
 📁 RestaurantProject/
-├── 📄 main.py            # FastAPI app — all routes, rate limiter, lifespan
+├── 📄 main.py            # FastAPI app - all routes, rate limiter, lifespan
 ├── 📄 models.py          # Pydantic models (BookingModel, RestaurantModel, etc.)
 ├── 📄 auth.py            # JWT creation & verification, bcrypt helpers
 ├── 📄 database.py        # MongoDB client + collection handles
 ├── 📄 config.py          # Loads all env vars via python-dotenv
 ├── 📄 requirements.txt
-├── 📄 .env               # Secrets — never commit ⚠️
+├── 📄 .env               # Secrets - never commit ⚠️
 ├── 📁 static/
 │   ├── 📄 script.js      # Booking flow, cancellation, toast notifications
 │   └── 📄 style.css      # Dark luxury theme (CSS variables, animations)
 └── 📁 templates/
-    ├── 📄 index.html     # Customer homepage — restaurant grid + booking modal
-    └── 📄 admin.html     # Admin dashboard — login, bookings table, add restaurant
+    ├── 📄 index.html     # Customer homepage - restaurant grid + booking modal
+    └── 📄 admin.html     # Admin dashboard - login, bookings table, add restaurant
 ```
 
 ### Request Flow
