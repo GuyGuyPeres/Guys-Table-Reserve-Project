@@ -127,10 +127,6 @@ python main.py
 App runs at → **http://localhost:8000**  
 Admin dashboard → **http://localhost:8000/admin**
 
-### Run Tests
-
-> No automated tests are included yet. Contributions welcome — see [Contributing](#-contributing).
-
 ---
 
 ## 💡 Usage
