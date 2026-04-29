@@ -77,26 +77,33 @@ function openBooking(id) {
 }
 
 // ── DATE SELECTED ──
-function onDateSelected() {
+async function onDateSelected() {
   const date = document.getElementById('booking-date').value;
   if (!date) return;
 
   const restaurantId = document.getElementById('selected-restaurant-id').value;
-  const restaurant = restaurantsData.find(r => r.id === restaurantId);
-  if (!restaurant) return;
 
-  // Show time slots
   document.getElementById('step-time').classList.remove('hidden');
   bookingForm.classList.add('hidden');
   selectedSlot = null;
 
   const container = document.getElementById('slots-container');
-  if (restaurant.available_slots.length) {
-    container.innerHTML = restaurant.available_slots.map(s => `
-      <span class="slot-pill" onclick="selectSlot('${s}', this)">${s}</span>
-    `).join('');
-  } else {
-    container.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">No slots available at this time.</p>`;
+  container.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">Loading slots…</p>`;
+
+  try {
+    const res = await fetch(`/api/restaurants/${restaurantId}/slots?date=${date}`);
+    const data = await res.json();
+    const slots = data.slots || [];
+
+    if (slots.length) {
+      container.innerHTML = slots.map(s => `
+        <span class="slot-pill" onclick="selectSlot('${s}', this)">${s}</span>
+      `).join('');
+    } else {
+      container.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">No slots available for this date.</p>`;
+    }
+  } catch {
+    container.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">Could not load slots. Please try again.</p>`;
   }
 }
 

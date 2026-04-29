@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Guy's Table Reserve</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/static/style.css?v=3">
+  <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
 
@@ -126,8 +126,8 @@
             </div>
             <div class="form-group">
               <label class="form-label">Available Time Slots</label>
-              <input type="text" id="res-slots" class="form-input" value="12:00, 13:00, 14:00, 18:00, 19:00, 20:00, 21:00, 22:00">
-              <p style="font-size:0.72rem;color:var(--text-dim);margin-top:0.4rem;">Default slots pre-filled — edit as needed, separate with commas</p>
+              <input type="text" id="res-slots" class="form-input" value="10:00, 11:00, 12:00, 13:00, 14:00, 18:00, 19:00, 20:00, 21:00, 22:00" disabled>
+              <p style="font-size:0.72rem;color:var(--text-dim);margin-top:0.4rem;">Standard slots applied to all restaurants automatically</p>
             </div>
             <button class="btn" onclick="addRestaurant()" style="width:auto;padding:0.85rem 2.5rem;">Add Restaurant</button>
           </div>
@@ -219,8 +219,7 @@
         document.getElementById('res-name').value = '';
         document.getElementById('res-desc').value = '';
         document.getElementById('res-img').value = '';
-        // Reset slots back to defaults
-        document.getElementById('res-slots').value = '12:00, 13:00, 14:00, 18:00, 19:00, 20:00, 21:00, 22:00';
+        document.getElementById('res-slots').value = '10:00, 11:00, 12:00, 13:00, 14:00, 18:00, 19:00, 20:00, 21:00, 22:00';
       } else {
         showToast('Failed to add restaurant.', 'error');
       }

@@ -21,6 +21,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("restaurant")
 
+DEFAULT_SLOTS = ["10:00", "11:00", "12:00", "13:00", "14:00", "18:00", "19:00", "20:00", "21:00", "22:00"]
+
 
 class RateLimiter:
     def __init__(self, max_calls: int, period: int):
@@ -57,6 +59,11 @@ async def lifespan(app: FastAPI):
         await bookings_collection.create_index("restaurant_id")
         await bookings_collection.create_index("booking_date")
         await bookings_collection.create_index("customer_phone")
+        # Compound index to efficiently check for duplicate slot bookings per date
+        await bookings_collection.create_index(
+            [("restaurant_id", 1), ("booking_date", 1), ("time_slot", 1)],
+            unique=True
+        )
         await restaurants_collection.create_index("name")
         logger.info("Database indexes ensured")
     except Exception as e:
@@ -73,6 +80,17 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to initialize admin: {e}")
         raise
+
+    # Migrate all restaurants to use the standard DEFAULT_SLOTS as their master list
+    try:
+        result = await restaurants_collection.update_many(
+            {},
+            {"$set": {"available_slots": DEFAULT_SLOTS}}
+        )
+        if result.modified_count:
+            logger.info(f"Migrated {result.modified_count} restaurant(s) to DEFAULT_SLOTS")
+    except Exception as e:
+        logger.error(f"Failed to migrate restaurant slots: {e}")
 
     logger.info("Application startup complete")
     yield
@@ -109,26 +127,61 @@ async def get_restaurants():
         raise HTTPException(status_code=500, detail="Failed to fetch restaurants")
 
 
+@app.get("/api/restaurants/{restaurant_id}/slots")
+async def get_slots_for_date(restaurant_id: str, date: str = Query(..., description="YYYY-MM-DD")):
+    """Return available time slots for a specific restaurant and date."""
+    try:
+        oid = to_object_id(restaurant_id)
+        restaurant = await restaurants_collection.find_one({"_id": oid})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found")
+
+        master_slots = restaurant.get("available_slots", DEFAULT_SLOTS)
+
+        booked_cursor = bookings_collection.find(
+            {"restaurant_id": restaurant_id, "booking_date": date},
+            {"time_slot": 1}
+        )
+        booked_slots = {b["time_slot"] async for b in booked_cursor}
+
+        available = [s for s in master_slots if s not in booked_slots]
+        return {"slots": available}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch slots for restaurant {restaurant_id} on {date}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch available slots")
+
+
 @app.post("/api/book")
 async def book_table(request: Request, booking: BookingModel):
     if not booking_limiter.is_allowed(request.client.host):
         raise HTTPException(status_code=429, detail="Too many requests. Please wait a minute before trying again.")
     try:
         restaurant_oid = to_object_id(booking.restaurant_id)
-        result = await restaurants_collection.update_one(
-            {"_id": restaurant_oid, "available_slots": booking.time_slot},
-            {"$pull": {"available_slots": booking.time_slot}}
-        )
-        if result.modified_count == 0:
-            raise HTTPException(status_code=400, detail="Time slot already taken or restaurant not found.")
+        restaurant = await restaurants_collection.find_one({"_id": restaurant_oid})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found.")
 
-        res_info = await restaurants_collection.find_one({"_id": restaurant_oid})
+        master_slots = restaurant.get("available_slots", DEFAULT_SLOTS)
+        if booking.time_slot not in master_slots:
+            raise HTTPException(status_code=400, detail="Invalid time slot.")
+
+        # Check if this slot is already taken for this restaurant+date
+        existing = await bookings_collection.find_one({
+            "restaurant_id": booking.restaurant_id,
+            "booking_date": booking.booking_date,
+            "time_slot": booking.time_slot
+        })
+        if existing:
+            raise HTTPException(status_code=400, detail="Time slot already taken for this date.")
+
         booking_data = booking.model_dump()
-        booking_data["restaurant_name"] = res_info["name"]
+        booking_data["restaurant_name"] = restaurant["name"]
 
         insert_result = await bookings_collection.insert_one(booking_data)
         booking_id = str(insert_result.inserted_id)
-        logger.info(f"Booking {booking_id} created for '{res_info['name']}' on {booking.booking_date}")
+        logger.info(f"Booking {booking_id} created for '{restaurant['name']}' on {booking.booking_date} at {booking.time_slot}")
         return {"status": "success", "booking_id": booking_id}
     except HTTPException:
         raise
@@ -147,10 +200,6 @@ async def cancel_booking(booking_id: str, data: CancelBookingRequest):
         if booking["customer_phone"] != data.customer_phone:
             raise HTTPException(status_code=403, detail="Phone number does not match this booking.")
 
-        await restaurants_collection.update_one(
-            {"_id": to_object_id(booking["restaurant_id"])},
-            {"$addToSet": {"available_slots": booking["time_slot"]}}
-        )
         await bookings_collection.delete_one({"_id": oid})
         logger.info(f"Booking {booking_id} cancelled by customer")
         return {"status": "cancelled"}
@@ -185,7 +234,10 @@ async def login(request: Request, form_data: AdminUser):
 @app.post("/api/admin/restaurants", dependencies=[Depends(get_current_admin)])
 async def add_restaurant(res: RestaurantModel):
     try:
-        new_res = await restaurants_collection.insert_one(res.model_dump())
+        data = res.model_dump()
+        # Always use DEFAULT_SLOTS as master regardless of what was submitted
+        data["available_slots"] = DEFAULT_SLOTS
+        new_res = await restaurants_collection.insert_one(data)
         logger.info(f"Restaurant '{res.name}' added")
         return {"id": str(new_res.inserted_id)}
     except Exception as e:
