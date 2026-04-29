@@ -4,7 +4,7 @@
 
 # 🍽️ Guy's Table Reserve
 
-### A sleek, full-stack restaurant reservation system - book a table in seconds, manage everything from one dashboard.
+### A sleek, full-stack restaurant reservation system — book a table in seconds, manage everything from one dashboard.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.136.1-009688?style=for-the-badge&logo=fastapi&logoColor=white)
@@ -38,22 +38,23 @@
 | Authentication | JWT (python-jose) + bcrypt (passlib) | jose 3.5.0 |
 | Data Validation | Pydantic | 2.13.3 |
 | Templating | Jinja2 | 3.1.6 |
-| Frontend | HTML5, Vanilla JS, CSS3 | - |
+| Frontend | HTML5, Vanilla JS, CSS3 | — |
 | Environment | python-dotenv | 1.2.2 |
 
 ---
 
 ## ✨ Key Features
 
-- **Multi-step booking flow** - Customers select a date, pick an available time slot, enter their details and guest count, all in a clean modal without leaving the page.
-- **Booking ID + self-cancellation** - Every confirmed reservation returns a unique Booking ID. Customers can cancel at any time using their ID and phone number - no account required.
-- **JWT-protected admin dashboard** - Admins log in with credentials from `.env`; all management endpoints require a signed token, verified on every request.
-- **Paginated reservations table** - Admin bookings load 50 per page with Prev/Next controls and a one-click copy button for each Booking ID.
-- **Rate limiting** - Booking endpoint is capped at 10 requests/min per IP; login at 5/min - built-in, no external dependency required.
-- **MongoDB indexes** - Indexes on `booking_date`, `customer_phone`, and `restaurant_id` are created at startup so queries stay fast as the database grows.
-- **Full error handling** - Every route wraps MongoDB operations in try/except; invalid ObjectIds are caught before hitting the database; all errors return structured JSON.
-- **Structured logging** - Timestamped log lines for every key event: startup, new bookings, admin logins, failed attempts, and errors.
-- **Time slot integrity** - Slots are atomically pulled from the restaurant document on booking and restored on cancellation, preventing double-bookings.
+- **Multi-step booking flow** — Customers pick a date, select an available time slot for that specific date, fill in their details and guest count — all inside a clean modal without leaving the page.
+- **Date-aware slot availability** — Available time slots are computed live per date (`master slots − already booked for that day`), so booking "19:00 on Monday" never blocks "19:00 on Tuesday". A dedicated `/api/restaurants/{id}/slots?date=` endpoint serves each date's real-time availability.
+- **Booking confirmation popup** — After a successful booking, a styled in-site modal displays the full reservation summary (restaurant, name, phone, date, time, guests, and Booking ID) with a one-click copy button — no native browser dialogs.
+- **Booking ID + self-cancellation** — Every confirmed reservation returns a unique Booking ID. Customers can cancel any time using their ID and phone number — no account required.
+- **JWT-protected admin dashboard** — Admins log in with credentials from `.env`; all management endpoints require a signed token verified on every request. SVG icons in the sidebar for a clean, consistent look.
+- **Paginated reservations table** — Admin bookings load 50 per page with Prev/Next controls and a one-click copy button for each Booking ID (shows `✓ Copied` feedback for 1.5 s).
+- **Rate limiting** — Booking endpoint capped at 10 requests/min per IP; login at 5/min — custom in-memory implementation, no external dependency.
+- **MongoDB indexes** — Indexes on `booking_date`, `customer_phone`, `restaurant_id`, and a unique compound index on `(restaurant_id, booking_date, time_slot)` prevent double-bookings at the database level and keep queries fast.
+- **Full error handling & logging** — Every route wraps MongoDB operations in try/except; invalid ObjectIds are caught before hitting the database; all errors return structured JSON; key events are timestamped in the server log.
+- **SVG favicon** — A fork-and-knife SVG icon displays sharp at any size across all modern browsers.
 
 ---
 
@@ -111,10 +112,10 @@
 <details>
 <summary>🔧 <strong>Troubleshooting</strong></summary>
 
-- **`ServerSelectionTimeoutError`** - Check your `MONGO_URI`. Make sure your IP is whitelisted in MongoDB Atlas under Network Access.
-- **`ModuleNotFoundError`** - Make sure your virtual environment is activated before running `pip install`.
-- **`RuntimeError: ADMIN_USERNAME and ADMIN_PASSWORD must be set`** - Your `.env` file is missing or not being loaded. Confirm the file is in the project root (same folder as `main.py`).
-- **Port already in use** - Another process is on port 8000. Stop it or change the port in `main.py`: `uvicorn.run(app, host="0.0.0.0", port=8001)`.
+- **`ServerSelectionTimeoutError`** — Check your `MONGO_URI`. Make sure your IP is whitelisted in MongoDB Atlas under Network Access.
+- **`ModuleNotFoundError`** — Make sure your virtual environment is activated before running `pip install`.
+- **`RuntimeError: ADMIN_USERNAME and ADMIN_PASSWORD must be set`** — Your `.env` file is missing or not being loaded. Confirm the file is in the project root (same folder as `main.py`).
+- **Port already in use** — Another process is on port 8000. Stop it or change the port in `main.py`: `uvicorn.run(app, host="0.0.0.0", port=8001)`.
 
 </details>
 
@@ -137,13 +138,29 @@ All API endpoints are served at `http://localhost:8000`. Request and response bo
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| `GET` | `/api/restaurants` | - | List all restaurants |
-| `POST` | `/api/book` | - | Create a booking |
-| `DELETE` | `/api/bookings/{id}` | - | Cancel a booking (phone verification) |
-| `POST` | `/api/admin/login` | - | Get a JWT token |
+| `GET` | `/api/restaurants` | — | List all restaurants |
+| `GET` | `/api/restaurants/{id}/slots?date=` | — | Available time slots for a specific date |
+| `POST` | `/api/book` | — | Create a booking |
+| `DELETE` | `/api/bookings/{id}` | — | Cancel a booking (phone verification) |
+| `POST` | `/api/admin/login` | — | Get a JWT token |
 | `GET` | `/api/admin/bookings` | Bearer token | List bookings (paginated) |
 | `DELETE` | `/api/admin/bookings/{id}` | Bearer token | Delete a booking |
 | `POST` | `/api/admin/restaurants` | Bearer token | Add a new restaurant |
+
+---
+
+### GET `/api/restaurants/{id}/slots`
+
+Returns available (not yet booked) time slots for a restaurant on a specific date.
+
+```bash
+curl "http://localhost:8000/api/restaurants/64f1a2b3c4d5e6f7a8b9c0d1/slots?date=2026-05-10"
+```
+
+**Response** `200`
+```json
+{ "slots": ["10:00", "11:00", "13:00", "18:00", "20:00", "21:00", "22:00"] }
+```
 
 ---
 
@@ -162,7 +179,7 @@ curl -X POST http://localhost:8000/api/book \
   }'
 ```
 
-**Response** `201`
+**Response** `200`
 ```json
 {
   "status": "success",
@@ -208,14 +225,24 @@ curl -X POST http://localhost:8000/api/admin/login \
 ### GET `/api/admin/bookings`
 
 ```bash
-curl http://localhost:8000/api/admin/bookings?page=1&limit=50 \
+curl "http://localhost:8000/api/admin/bookings?page=1&limit=50" \
   -H "Authorization: Bearer <token>"
 ```
 
 **Response** `200`
 ```json
 {
-  "bookings": [ { "id": "...", "restaurant_name": "...", "customer_name": "...", "booking_date": "2026-05-10", "time_slot": "19:00", "guest_count": 2 } ],
+  "bookings": [
+    {
+      "id": "6650fa3e2b1c4a0012abcdef",
+      "restaurant_name": "Le Jardin",
+      "customer_name": "Guy Peres",
+      "customer_phone": "0529918459",
+      "booking_date": "2026-05-10",
+      "time_slot": "19:00",
+      "guest_count": 2
+    }
+  ],
   "total": 120,
   "page": 1,
   "limit": 50,
@@ -234,10 +261,10 @@ All errors return this shape:
 
 | Status | Meaning |
 |--------|---------|
-| `400` | Bad request (slot taken, invalid ID format) |
+| `400` | Bad request (slot already taken for that date, invalid ID format) |
 | `401` | Invalid or missing credentials |
 | `403` | Phone number does not match booking |
-| `404` | Booking not found |
+| `404` | Restaurant or booking not found |
 | `429` | Rate limit exceeded |
 | `500` | Internal server error (logged server-side) |
 
@@ -249,19 +276,20 @@ All errors return this shape:
 
 ```text
 📁 RestaurantProject/
-├── 📄 main.py            # FastAPI app - all routes, rate limiter, lifespan
+├── 📄 main.py            # FastAPI app — routes, rate limiter, lifespan, DEFAULT_SLOTS
 ├── 📄 models.py          # Pydantic models (BookingModel, RestaurantModel, etc.)
 ├── 📄 auth.py            # JWT creation & verification, bcrypt helpers
 ├── 📄 database.py        # MongoDB client + collection handles
 ├── 📄 config.py          # Loads all env vars via python-dotenv
 ├── 📄 requirements.txt
-├── 📄 .env               # Secrets - never commit ⚠️
+├── 📄 .env               # Secrets — never commit ⚠️
 ├── 📁 static/
-│   ├── 📄 script.js      # Booking flow, cancellation, toast notifications
-│   └── 📄 style.css      # Dark luxury theme (CSS variables, animations)
+│   ├── 📄 script.js      # Booking flow, confirmation modal, cancellation, toasts
+│   ├── 📄 style.css      # Dark luxury theme (CSS variables, animations, modals)
+│   └── 📄 favicon.svg    # Fork-and-knife SVG icon
 └── 📁 templates/
-    ├── 📄 index.html     # Customer homepage - restaurant grid + booking modal
-    └── 📄 admin.html     # Admin dashboard - login, bookings table, add restaurant
+    ├── 📄 index.html     # Customer page — restaurant grid, booking modal, confirmation popup, cancel section
+    └── 📄 admin.html     # Admin dashboard — login, bookings table, add restaurant
 ```
 
 ### Request Flow
@@ -283,6 +311,12 @@ FastAPI Router (main.py)
      ▼
 Motor (async MongoDB driver)
      │
+     ├─ /slots?date=   → master_slots − booked_slots_for_date
+     │
+     ├─ POST /book     → check duplicate (restaurant+date+slot), then insert
+     │
+     └─ DELETE /book   → verify phone, delete booking (slot auto-restores)
+     │
      ▼
 MongoDB Atlas
      │
@@ -290,8 +324,34 @@ MongoDB Atlas
 JSON Response  ◄── Exception Handler ◄── try/except (500 on DB failure)
 ```
 
+### Slot Availability Model
+
+Time slots are **not** stored as mutable state on the restaurant document. Instead:
+
+- `available_slots` on each restaurant is a fixed master list (`10:00 → 14:00`, `18:00 → 22:00`)
+- When a date is selected in the UI, the frontend fetches `/api/restaurants/{id}/slots?date=YYYY-MM-DD`
+- The backend computes: **available = master_slots − slots with existing bookings for that date**
+- A unique compound index on `(restaurant_id, booking_date, time_slot)` enforces no duplicates at the DB level
+
 ---
 
+## 🤝 Contributing
+
+Pull requests are welcome.
+
+<details>
+<summary>📐 <strong>Code Style Guidelines</strong></summary>
+
+- **Naming** — `snake_case` for Python identifiers; `camelCase` for JS functions and variables
+- **Single responsibility** — each route handler does one thing; validation and DB logic stay separate
+- **Error handling** — wrap all DB calls in try/except; always raise `HTTPException` with a clear `detail` message
+- **Types** — use Pydantic models for all request bodies; annotate function signatures
+- **Async** — all route handlers and DB calls must be `async`; use `asyncio.to_thread` for blocking operations
+- **Env vars** — never hardcode credentials; always load from `.env` via `config.py`
+
+</details>
+
+---
 
 <div align="center">
 
