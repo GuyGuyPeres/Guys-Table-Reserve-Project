@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Guy's Dining Reservations</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/static/style.css?v=3">
+  <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
 
@@ -121,9 +121,60 @@
     </div>
   </div>
 
+  <!-- CONFIRMATION MODAL -->
+  <div id="confirm-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="modal-eyebrow">Reservation Confirmed</p>
+          <h2 class="modal-title">Your Table is Reserved</h2>
+        </div>
+        <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-check">✓</div>
+        <div class="confirm-details">
+          <div class="confirm-row">
+            <span class="confirm-label">Restaurant</span>
+            <span class="confirm-value" id="conf-restaurant"></span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Name</span>
+            <span class="confirm-value" id="conf-name"></span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Phone</span>
+            <span class="confirm-value" id="conf-phone"></span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Date</span>
+            <span class="confirm-value" id="conf-date"></span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Time Slot</span>
+            <span class="confirm-value" id="conf-time"></span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Guests</span>
+            <span class="confirm-value" id="conf-guests"></span>
+          </div>
+        </div>
+        <div class="confirm-id-box">
+          <p class="confirm-label" style="margin-bottom:0.6rem;">Booking ID</p>
+          <div class="confirm-id-row">
+            <span class="confirm-id-value" id="conf-booking-id"></span>
+            <button class="confirm-copy-btn" id="conf-copy-btn" onclick="copyConfirmId()">⎘ Copy</button>
+          </div>
+          <p class="confirm-id-hint">Save this ID — you'll need it to cancel your reservation.</p>
+        </div>
+        <button class="btn" onclick="closeConfirmModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toast-container"></div>
 
-  <script src="/static/script.js?v=3"></script>
+  <script src="/static/script.js?v=4"></script>
 </body>
 </html>

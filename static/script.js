@@ -151,7 +151,7 @@ bookingForm.onsubmit = async (e) => {
   if (res.ok) {
     const data = await res.json();
     closeModal();
-    showToast(`Confirmed! Save your Booking ID: ${data.booking_id}`);
+    showConfirmModal(data, payload);
     setTimeout(() => loadRestaurants(), 500);
   } else {
     const err = await res.json();
@@ -188,6 +188,37 @@ async function cancelBooking() {
   } catch {
     showToast('Network error. Please try again.', 'error');
   }
+}
+
+// ── CONFIRMATION MODAL ──
+function showConfirmModal(data, payload) {
+  const restaurant = restaurantsData.find(r => r.id === payload.restaurant_id);
+  document.getElementById('conf-restaurant').textContent = restaurant ? restaurant.name : '';
+  document.getElementById('conf-name').textContent = payload.customer_name;
+  document.getElementById('conf-phone').textContent = payload.customer_phone;
+  document.getElementById('conf-date').textContent = payload.booking_date;
+  document.getElementById('conf-time').textContent = payload.time_slot;
+  document.getElementById('conf-guests').textContent = payload.guest_count;
+  document.getElementById('conf-booking-id').textContent = data.booking_id;
+  document.getElementById('conf-copy-btn').textContent = '⎘ Copy';
+
+  const m = document.getElementById('confirm-modal');
+  m.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirm-modal').classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+function copyConfirmId() {
+  const id = document.getElementById('conf-booking-id').textContent;
+  navigator.clipboard.writeText(id).then(() => {
+    const btn = document.getElementById('conf-copy-btn');
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = '⎘ Copy'; }, 1500);
+  });
 }
 
 loadRestaurants();
