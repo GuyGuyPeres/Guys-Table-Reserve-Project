@@ -9,7 +9,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from database import restaurants_collection, bookings_collection, admins_collection
 from models import RestaurantModel, BookingModel, CancelBookingRequest, AdminUser
-from auth import hash_password, verify_password, create_access_token, get_current_admin
+from auth import verify_password, create_access_token, get_current_admin
 from config import settings
 from contextlib import asynccontextmanager
 import uvicorn
@@ -52,9 +52,6 @@ def to_object_id(id: str) -> ObjectId:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not settings.ADMIN_USERNAME or not settings.ADMIN_PASSWORD:
-        raise RuntimeError("ADMIN_USERNAME and ADMIN_PASSWORD must be set in .env")
-
     try:
         await bookings_collection.create_index("restaurant_id")
         await bookings_collection.create_index("booking_date")
@@ -70,15 +67,14 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to create indexes: {e}")
 
     try:
-        admin_exists = await admins_collection.find_one({"username": settings.ADMIN_USERNAME})
+        admin_exists = await admins_collection.find_one({})
         if not admin_exists:
-            await admins_collection.insert_one({
-                "username": settings.ADMIN_USERNAME,
-                "password": hash_password(settings.ADMIN_PASSWORD)
-            })
-            logger.info(f"Default admin '{settings.ADMIN_USERNAME}' created")
+            raise RuntimeError("No admin account found in the database. Add one via MongoDB Compass before starting the app.")
+        logger.info("Admin account verified")
+    except RuntimeError:
+        raise
     except Exception as e:
-        logger.error(f"Failed to initialize admin: {e}")
+        logger.error(f"Failed to verify admin: {e}")
         raise
 
     # Migrate all restaurants to use the standard DEFAULT_SLOTS as their master list
