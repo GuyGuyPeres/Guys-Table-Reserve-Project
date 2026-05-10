@@ -39,7 +39,7 @@ class RateLimiter:
         return True
 
 
-booking_limiter = RateLimiter(max_calls=10, period=60)
+booking_limiter = RateLimiter(max_calls=3, period=60)
 login_limiter = RateLimiter(max_calls=5, period=60)
 
 
