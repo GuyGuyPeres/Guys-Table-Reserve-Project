@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 from time import time as _time
 from fastapi import FastAPI, HTTPException, Depends, Request, Query
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -41,6 +42,7 @@ class RateLimiter:
 
 booking_limiter = RateLimiter(max_calls=3, period=60)
 login_limiter = RateLimiter(max_calls=5, period=60)
+cancel_limiter = RateLimiter(max_calls=5, period=60)
 
 
 def to_object_id(id: str) -> ObjectId:
@@ -93,7 +95,24 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutdown")
 
 
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' https: data:; "
+            "object-src 'none'; "
+            "frame-ancestors 'none'"
+        )
+        return response
+
+
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(SecurityHeadersMiddleware)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -187,7 +206,9 @@ async def book_table(request: Request, booking: BookingModel):
 
 
 @app.delete("/api/bookings/{booking_id}")
-async def cancel_booking(booking_id: str, data: CancelBookingRequest):
+async def cancel_booking(request: Request, booking_id: str, data: CancelBookingRequest):
+    if not cancel_limiter.is_allowed(request.client.host):
+        raise HTTPException(status_code=429, detail="Too many cancellation attempts. Please wait a minute.")
     try:
         oid = to_object_id(booking_id)
         booking = await bookings_collection.find_one({"_id": oid})

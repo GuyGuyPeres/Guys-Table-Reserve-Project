@@ -232,6 +232,16 @@
       }
     }
 
+    function escapeHtml(val) {
+      if (val == null) return '—';
+      return String(val)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     async function loadBookings(page = 1) {
       const res = await fetch(`/api/admin/bookings?page=${page}&limit=50`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -256,19 +266,19 @@
 
       tbody.innerHTML = bookings.map(b => `
         <tr>
-          <td><span style="color:var(--text)">${b.restaurant_name}</span></td>
-          <td>${b.customer_name}</td>
-          <td><a href="mailto:${b.customer_email}" style="color:var(--text-muted);text-decoration:none;" title="${b.customer_email}">${b.customer_email || '—'}</a></td>
-          <td>${b.customer_phone}</td>
+          <td><span style="color:var(--text)">${escapeHtml(b.restaurant_name)}</span></td>
+          <td>${escapeHtml(b.customer_name)}</td>
+          <td><a href="mailto:${escapeHtml(b.customer_email)}" style="color:var(--text-muted);text-decoration:none;" title="${escapeHtml(b.customer_email)}">${escapeHtml(b.customer_email)}</a></td>
+          <td>${escapeHtml(b.customer_phone)}</td>
           <td><span class="badge">${b.booking_date ? formatDate(b.booking_date) : '—'}</span></td>
-          <td><span class="badge">${b.time_slot}</span></td>
-          <td>${b.guest_count || '—'}</td>
+          <td><span class="badge">${escapeHtml(b.time_slot)}</span></td>
+          <td>${escapeHtml(b.guest_count)}</td>
           <td>
-            <span style="font-family:monospace;font-size:0.75rem;color:var(--text-muted)" title="${b.id}">${b.id.slice(0, 8)}…</span>
-            <button onclick="copyId('${b.id}', this)" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.75rem;margin-left:0.3rem;transition:color 0.2s" title="Copy full ID">⎘</button>
+            <span style="font-family:monospace;font-size:0.75rem;color:var(--text-muted)" title="${escapeHtml(b.id)}">${escapeHtml(b.id.slice(0, 8))}…</span>
+            <button onclick="copyId('${escapeHtml(b.id)}', this)" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.75rem;margin-left:0.3rem;transition:color 0.2s" title="Copy full ID">⎘</button>
           </td>
           <td>
-            <button class="btn btn-danger" onclick="deleteBooking('${b.id}', this)">Delete</button>
+            <button class="btn btn-danger" onclick="deleteBooking('${escapeHtml(b.id)}', this)">Delete</button>
           </td>
         </tr>
       `).join('');

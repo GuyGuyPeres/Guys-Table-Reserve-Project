@@ -3,17 +3,24 @@ from typing import List
 from datetime import date, timedelta
 
 class RestaurantModel(BaseModel):
-    name: str
-    description: str
-    image_url: str
+    name: str = Field(min_length=1, max_length=100)
+    description: str = Field(max_length=500)
+    image_url: str = Field(max_length=500)
     available_slots: List[str]
 
+    @field_validator("image_url")
+    @classmethod
+    def validate_image_url(cls, v: str) -> str:
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("image_url must be a valid HTTP or HTTPS URL")
+        return v
+
 class BookingModel(BaseModel):
-    restaurant_id: str
-    customer_name: str
+    restaurant_id: str = Field(min_length=1, max_length=24)
+    customer_name: str = Field(min_length=1, max_length=100)
     customer_email: EmailStr
-    customer_phone: str
-    time_slot: str
+    customer_phone: str = Field(min_length=5, max_length=30)
+    time_slot: str = Field(min_length=1, max_length=10)
     booking_date: str  # format: YYYY-MM-DD
     guest_count: int = Field(default=2, ge=1, le=20)
 
