@@ -392,8 +392,8 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   width: 100%;
-  max-width: 520px;
-  max-height: 90vh;
+  max-width: 580px;
+  max-height: 92vh;
   overflow-y: auto;
   position: relative;
   transform: translateY(30px) scale(0.97);
@@ -856,24 +856,86 @@ tr:hover td { background: var(--surface2); }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
-  .navbar { padding: 0 1.2rem; }
-  .navbar-logo { font-size: 1.1rem; }
+  /* Navbar */
+  .navbar { padding: 0 1.1rem; height: 60px; }
+  .navbar-logo { font-size: 1rem; letter-spacing: 0.06em; }
+  .api-status { display: none; }
+  .btn-ghost { padding: 0.45rem 0.9rem; font-size: 0.72rem; }
 
-  .hero-title { font-size: 3rem; }
+  /* Hero */
+  .hero { height: 80vh; padding: 0 1.25rem; }
+  .hero-title { font-size: 2.6rem; }
+  .hero-subtitle { font-size: 0.88rem; }
 
+  /* Section */
+  .section { padding: 3.5rem 0; }
+  .section-title { font-size: 1.8rem; }
+  .container { padding: 0 1.1rem; }
+
+  /* Cards */
   .grid { grid-template-columns: 1fr; gap: 1px; }
   .card { aspect-ratio: 4/3; }
   .card p { max-height: 100px; opacity: 1; }
   .card .card-tag { opacity: 1; transform: none; }
   .card .btn-card { opacity: 1; transform: none; }
 
+  /* Modal — bottom sheet */
+  .modal { padding: 0; align-items: flex-end; }
+  .modal-content {
+    max-width: 100%;
+    max-height: 95vh;
+    border-radius: 16px 16px 0 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+  .modal-header { padding: 1.25rem 1.25rem 1rem; }
+  .modal-title { font-size: 1.5rem; }
+  .modal-body { padding: 1.25rem; }
+
+  /* Prevent iOS input zoom (font-size must be >= 16px) */
+  .form-input { font-size: 16px; }
+  input[type="text"], input[type="email"], input[type="tel"],
+  input[type="number"], textarea { font-size: 16px; }
+
+  /* Bigger tap targets */
+  .btn { min-height: 48px; font-size: 0.82rem; }
+  .btn-ghost { min-height: 40px; }
+  .slot-pill { padding: 0.7rem 1.1rem; font-size: 0.88rem; }
+  .form-input { padding: 0.85rem 1rem; }
+
+  /* Calendar — bigger touch targets */
+  .calendar-day { min-height: 44px; font-size: 0.9rem; }
+  .calendar-nav { width: 40px; height: 40px; font-size: 1.2rem; }
+  .calendar-dow span { font-size: 0.65rem; padding: 0.4rem 0; }
+  .calendar-month-label { font-size: 0.85rem; }
+  .calendar-popup { padding: 1rem; }
+
+  /* Cancel box */
+  .cancel-box { padding: 1.5rem 1.1rem; }
+
+  /* Admin */
   .admin-layout { grid-template-columns: 1fr; }
   .admin-sidebar { display: none; }
-
+  .admin-main { padding: 1.25rem; }
+  .admin-card { padding: 1.25rem; }
   .form-row { grid-template-columns: 1fr; }
+  .login-card { padding: 1.5rem; }
 
+  /* Toast */
   .toast-container { bottom: 1rem; right: 1rem; left: 1rem; }
   .toast { min-width: unset; max-width: 100%; }
+
+  /* Confirmation modal */
+  .confirm-row { padding: 0.6rem 0.9rem; }
+  .confirm-value { font-size: 0.82rem; }
+}
+
+@media (max-width: 400px) {
+  .hero-title { font-size: 2.1rem; }
+  .modal-header { padding: 1rem; }
+  .modal-body { padding: 1rem; }
+  .calendar-day { min-height: 40px; font-size: 0.82rem; }
 }
 
 /* ── CONFIRMATION MODAL ── */
@@ -976,17 +1038,112 @@ tr:hover td { background: var(--surface2); }
   letter-spacing: 0.02em;
 }
 
-/* ── DATE INPUT ── */
-input[type="date"].form-input {
-  color-scheme: dark;
+/* ── CUSTOM DATE PICKER ── */
+.custom-date-picker { position: relative; }
+
+.date-trigger {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 300;
+  outline: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+  transition: border-color var(--transition), color var(--transition);
 }
-input[type="date"].form-input::-webkit-calendar-picker-indicator {
-  filter: invert(0.7) sepia(1) saturate(2) hue-rotate(5deg);
+.date-trigger.has-value { color: var(--text); }
+.date-trigger.open,
+.date-trigger:focus { border-color: var(--gold); }
+
+.calendar-popup {
+  margin-top: 8px;
+  background: var(--surface2);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+
+.calendar-nav {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 1.1rem;
   cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+  flex-shrink: 0;
 }
-input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
+.calendar-nav:hover:not(:disabled) { color: var(--gold); border-color: var(--gold); background: var(--gold-dim); }
+.calendar-nav:disabled { opacity: 0.2; cursor: default; }
+
+.calendar-month-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
 }
+
+.calendar-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.35rem;
+}
+.calendar-dow span {
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 0.25rem 0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendar-day {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: none;
+  border: 1px solid transparent;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.15s ease;
+}
+.calendar-day:hover:not(.disabled):not(.selected) { background: var(--gold-dim); color: var(--gold); border-color: rgba(201,168,76,0.2); }
+.calendar-day.today:not(.selected) { border-color: rgba(201,168,76,0.4); color: var(--gold); }
+.calendar-day.selected { background: var(--gold); color: #0c0d0f; font-weight: 500; border-color: var(--gold); }
+.calendar-day.disabled { color: var(--text-dim); cursor: default; opacity: 0.3; }
+.calendar-day.other-month { opacity: 0.15; }

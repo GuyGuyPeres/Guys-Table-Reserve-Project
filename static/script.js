@@ -5,6 +5,14 @@ const bookingForm = document.getElementById('booking-form');
 let restaurantsData = [];
 let selectedSlot = null;
 
+// ── CALENDAR STATE ──
+let calViewYear = new Date().getFullYear();
+let calViewMonth = new Date().getMonth();
+let calMinDate = null;
+let calMaxDate = null;
+const CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CAL_MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
 // ── TOAST ──
 function showToast(msg, type = 'success') {
   const container = document.getElementById('toast-container');
@@ -54,15 +62,16 @@ function openBooking(id) {
   document.getElementById('modal-title').innerText = restaurant.name;
   document.getElementById('selected-restaurant-id').value = id;
 
-  // Reset all steps
-  const dateInput = document.getElementById('booking-date');
-  dateInput.value = '';
-  // Set min date to today
-  dateInput.min = new Date().toISOString().split('T')[0];
-  // Set max date to 3 months from now
-  const maxDate = new Date();
-  maxDate.setMonth(maxDate.getMonth() + 3);
-  dateInput.max = maxDate.toISOString().split('T')[0];
+  // Reset calendar
+  document.getElementById('booking-date').value = '';
+  document.getElementById('date-display').textContent = 'Select a date';
+  document.getElementById('date-trigger').classList.remove('has-value', 'open');
+  document.getElementById('calendar-popup').classList.add('hidden');
+  calMinDate = new Date(); calMinDate.setHours(0, 0, 0, 0);
+  calMaxDate = new Date(); calMaxDate.setMonth(calMaxDate.getMonth() + 3);
+  calViewYear = calMinDate.getFullYear();
+  calViewMonth = calMinDate.getMonth();
+  renderCalendar();
 
   document.getElementById('step-date').classList.remove('hidden');
   document.getElementById('step-time').classList.add('hidden');
@@ -116,10 +125,88 @@ function selectSlot(time, el) {
   bookingForm.classList.remove('hidden');
 }
 
+// ── CALENDAR ──
+function renderCalendar() {
+  document.getElementById('calendar-month-label').textContent = `${CAL_MONTHS[calViewMonth]} ${calViewYear}`;
+
+  const minStr = calMinDate.toISOString().split('T')[0];
+  const maxStr = calMaxDate.toISOString().split('T')[0];
+  const todayStr = new Date().toISOString().split('T')[0];
+  const selectedStr = document.getElementById('booking-date').value;
+
+  document.getElementById('cal-prev').disabled =
+    calViewYear === calMinDate.getFullYear() && calViewMonth === calMinDate.getMonth();
+  document.getElementById('cal-next').disabled =
+    calViewYear === calMaxDate.getFullYear() && calViewMonth === calMaxDate.getMonth();
+
+  const firstWeekday = new Date(calViewYear, calViewMonth, 1).getDay();
+  const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+  const daysInPrev = new Date(calViewYear, calViewMonth, 0).getDate();
+
+  let html = '';
+
+  for (let i = firstWeekday - 1; i >= 0; i--)
+    html += `<button type="button" class="calendar-day other-month disabled" disabled>${daysInPrev - i}</button>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${calViewYear}-${String(calViewMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const disabled = ds < minStr || ds > maxStr;
+    let cls = 'calendar-day';
+    if (ds === todayStr) cls += ' today';
+    if (ds === selectedStr) cls += ' selected';
+    if (disabled) cls += ' disabled';
+    html += disabled
+      ? `<button type="button" class="${cls}" disabled>${d}</button>`
+      : `<button type="button" class="${cls}" onclick="selectCalendarDate('${ds}')">${d}</button>`;
+  }
+
+  const used = firstWeekday + daysInMonth;
+  const tail = used % 7 === 0 ? 0 : 7 - (used % 7);
+  for (let d = 1; d <= tail; d++)
+    html += `<button type="button" class="calendar-day other-month disabled" disabled>${d}</button>`;
+
+  document.getElementById('calendar-grid').innerHTML = html;
+}
+
+function toggleCalendar() {
+  const popup = document.getElementById('calendar-popup');
+  const trigger = document.getElementById('date-trigger');
+  const isHidden = popup.classList.toggle('hidden');
+  trigger.classList.toggle('open', !isHidden);
+}
+
+function changeCalendarMonth(delta) {
+  calViewMonth += delta;
+  if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+  if (calViewMonth < 0)  { calViewMonth = 11; calViewYear--; }
+  renderCalendar();
+}
+
+function selectCalendarDate(ds) {
+  document.getElementById('booking-date').value = ds;
+  const [y, m, d] = ds.split('-');
+  document.getElementById('date-display').textContent = `${CAL_MONTHS_SHORT[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+  document.getElementById('date-trigger').classList.add('has-value');
+  document.getElementById('date-trigger').classList.remove('open');
+  document.getElementById('calendar-popup').classList.add('hidden');
+  renderCalendar();
+  onDateSelected();
+}
+
+document.addEventListener('click', e => {
+  const picker = document.getElementById('custom-date-picker');
+  if (picker && !picker.contains(e.target)) {
+    document.getElementById('calendar-popup').classList.add('hidden');
+    document.getElementById('date-trigger').classList.remove('open');
+  }
+});
+
 // ── CLOSE MODAL ──
 function closeModal() {
   modal.classList.remove('visible');
   document.body.style.overflow = '';
+  document.getElementById('calendar-popup').classList.add('hidden');
+  document.getElementById('date-trigger').classList.remove('open');
 }
 
 modal.addEventListener('click', e => {
