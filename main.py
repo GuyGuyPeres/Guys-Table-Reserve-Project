@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from bson import ObjectId
 from bson.errors import InvalidId
-from database import restaurants_collection, bookings_collection, admins_collection
+from database import client, restaurants_collection, bookings_collection, admins_collection
 from models import RestaurantModel, BookingModel, CancelBookingRequest, AdminUser
 from auth import verify_password, create_access_token, get_current_admin
 from config import settings
@@ -139,7 +139,12 @@ async def admin_page(request: Request):
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok"}
+    try:
+        await client.admin.command("ping")
+        db_status = "ok"
+    except Exception:
+        db_status = "error"
+    return {"api": "ok", "db": db_status}
 
 
 @app.get("/api/restaurants")

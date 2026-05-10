@@ -44,7 +44,11 @@
       <div class="navbar-actions">
         <div class="api-status" id="api-status" title="Checking...">
           <span class="api-status-dot" id="api-status-dot"></span>
-          <span class="api-status-label" id="api-status-label">Connecting</span>
+          <span class="api-status-label" id="api-status-label">API</span>
+        </div>
+        <div class="api-status" id="db-status" title="Checking database...">
+          <span class="api-status-dot" id="db-status-dot"></span>
+          <span class="api-status-label" id="db-status-label">DB</span>
         </div>
         <a href="/" class="btn-ghost">← View Site</a>
         <button class="btn-ghost" onclick="logout()">Sign Out</button>
@@ -383,24 +387,35 @@
     });
 
     async function checkApiHealth() {
-      const dot = document.getElementById('api-status-dot');
-      const label = document.getElementById('api-status-label');
-      const wrapper = document.getElementById('api-status');
+      const apiDot = document.getElementById('api-status-dot');
+      const apiLabel = document.getElementById('api-status-label');
+      const apiWrapper = document.getElementById('api-status');
+      const dbDot = document.getElementById('db-status-dot');
+      const dbLabel = document.getElementById('db-status-label');
+      const dbWrapper = document.getElementById('db-status');
       try {
         const res = await fetch('/api/health');
         if (res.ok) {
-          dot.style.background = '#4ade80';
-          label.textContent = 'Online';
-          wrapper.title = 'API is online';
+          const data = await res.json();
+          apiDot.style.background = '#4ade80';
+          apiLabel.textContent = 'API';
+          apiWrapper.title = 'API is online';
+          if (data.db === 'ok') {
+            dbDot.style.background = '#4ade80';
+            dbLabel.textContent = 'DB';
+            dbWrapper.title = 'Database is connected';
+          } else {
+            dbDot.style.background = '#f87171';
+            dbLabel.textContent = 'DB';
+            dbWrapper.title = 'Database connection error';
+          }
         } else {
-          dot.style.background = '#f87171';
-          label.textContent = 'Error';
-          wrapper.title = 'API returned an error';
+          apiDot.style.background = '#f87171'; apiLabel.textContent = 'API'; apiWrapper.title = 'API error';
+          dbDot.style.background = '#6b7280'; dbLabel.textContent = 'DB'; dbWrapper.title = 'Unknown';
         }
       } catch {
-        dot.style.background = '#f87171';
-        label.textContent = 'Offline';
-        wrapper.title = 'Cannot reach the API';
+        apiDot.style.background = '#f87171'; apiLabel.textContent = 'API'; apiWrapper.title = 'Cannot reach the API';
+        dbDot.style.background = '#6b7280'; dbLabel.textContent = 'DB'; dbWrapper.title = 'Unknown';
       }
     }
     checkApiHealth();
