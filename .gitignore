@@ -26,6 +26,7 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+Deployment-To-AWS
 
 # Logs
 *.log
