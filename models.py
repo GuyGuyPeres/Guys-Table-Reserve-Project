@@ -39,8 +39,8 @@ class BookingModel(BaseModel):
         return v
 
 class CancelBookingRequest(BaseModel):
-    customer_phone: str
+    customer_phone: str = Field(min_length=5, max_length=30)
 
 class AdminUser(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=1, max_length=50)
+    password: str = Field(min_length=1, max_length=200)

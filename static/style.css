@@ -64,6 +64,10 @@ body {
 
 .navbar-actions { display: flex; align-items: center; gap: 1rem; }
 
+.api-status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.03em; cursor: default; }
+.api-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #6b7280; flex-shrink: 0; transition: background 0.4s; }
+.api-status-label { transition: color 0.4s; }
+
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);

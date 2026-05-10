@@ -54,6 +54,11 @@ def to_object_id(id: str) -> ObjectId:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if not settings.MONGO_URI:
+        raise RuntimeError("MONGO_URI must be set in .env")
+    if not settings.SECRET_KEY:
+        raise RuntimeError("SECRET_KEY must be set in .env")
+
     try:
         await bookings_collection.create_index("restaurant_id")
         await bookings_collection.create_index("booking_date")
@@ -95,6 +100,10 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutdown")
 
 
+def get_client_ip(request: Request) -> str:
+    return request.headers.get("X-Real-IP") or request.client.host
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response = await call_next(request)
@@ -126,6 +135,11 @@ async def home(request: Request):
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
     return templates.TemplateResponse(request=request, name="admin.html")
+
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok"}
 
 
 @app.get("/api/restaurants")
@@ -170,7 +184,7 @@ async def get_slots_for_date(restaurant_id: str, date: str = Query(..., descript
 
 @app.post("/api/book")
 async def book_table(request: Request, booking: BookingModel):
-    if not booking_limiter.is_allowed(request.client.host):
+    if not booking_limiter.is_allowed(get_client_ip(request)):
         raise HTTPException(status_code=429, detail="Too many requests. Please wait a minute before trying again.")
     try:
         restaurant_oid = to_object_id(booking.restaurant_id)
@@ -207,15 +221,13 @@ async def book_table(request: Request, booking: BookingModel):
 
 @app.delete("/api/bookings/{booking_id}")
 async def cancel_booking(request: Request, booking_id: str, data: CancelBookingRequest):
-    if not cancel_limiter.is_allowed(request.client.host):
+    if not cancel_limiter.is_allowed(get_client_ip(request)):
         raise HTTPException(status_code=429, detail="Too many cancellation attempts. Please wait a minute.")
     try:
         oid = to_object_id(booking_id)
         booking = await bookings_collection.find_one({"_id": oid})
-        if not booking:
-            raise HTTPException(status_code=404, detail="Booking not found.")
-        if booking["customer_phone"] != data.customer_phone:
-            raise HTTPException(status_code=403, detail="Phone number does not match this booking.")
+        if not booking or booking["customer_phone"] != data.customer_phone:
+            raise HTTPException(status_code=403, detail="Invalid booking ID or phone number.")
 
         await bookings_collection.delete_one({"_id": oid})
         logger.info(f"Booking {booking_id} cancelled by customer")
@@ -230,7 +242,7 @@ async def cancel_booking(request: Request, booking_id: str, data: CancelBookingR
 # --- ADMIN AUTH ---
 @app.post("/api/admin/login")
 async def login(request: Request, form_data: AdminUser):
-    if not login_limiter.is_allowed(request.client.host):
+    if not login_limiter.is_allowed(get_client_ip(request)):
         raise HTTPException(status_code=429, detail="Too many login attempts. Please wait a minute.")
     try:
         user = await admins_collection.find_one({"username": form_data.username})

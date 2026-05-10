@@ -42,6 +42,10 @@
     <nav class="navbar">
       <a href="/" class="navbar-logo">Guy's <span>Table Reserve</span></a>
       <div class="navbar-actions">
+        <div class="api-status" id="api-status" title="Checking...">
+          <span class="api-status-dot" id="api-status-dot"></span>
+          <span class="api-status-label" id="api-status-label">Connecting</span>
+        </div>
         <a href="/" class="btn-ghost">← View Site</a>
         <button class="btn-ghost" onclick="logout()">Sign Out</button>
       </div>
@@ -311,6 +315,7 @@
     }
 
     async function deleteBooking(id, btn) {
+      if (!confirm('Delete this booking? This cannot be undone.')) return;
       const row = btn.closest('tr');
       const res = await fetch(`/api/admin/bookings/${id}`, {
         method: 'DELETE',
@@ -332,6 +337,30 @@
         login();
       }
     });
+
+    async function checkApiHealth() {
+      const dot = document.getElementById('api-status-dot');
+      const label = document.getElementById('api-status-label');
+      const wrapper = document.getElementById('api-status');
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          dot.style.background = '#4ade80';
+          label.textContent = 'Online';
+          wrapper.title = 'API is online';
+        } else {
+          dot.style.background = '#f87171';
+          label.textContent = 'Error';
+          wrapper.title = 'API returned an error';
+        }
+      } catch {
+        dot.style.background = '#f87171';
+        label.textContent = 'Offline';
+        wrapper.title = 'Cannot reach the API';
+      }
+    }
+    checkApiHealth();
+    setInterval(checkApiHealth, 30000);
   </script>
 </body>
 </html>
