@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from typing import List
 
 class RestaurantModel(BaseModel):
@@ -10,6 +10,7 @@ class RestaurantModel(BaseModel):
 class BookingModel(BaseModel):
     restaurant_id: str
     customer_name: str
+    customer_email: EmailStr
     customer_phone: str
     time_slot: str
     booking_date: str  # format: YYYY-MM-DD

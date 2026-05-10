@@ -88,6 +88,7 @@
                   <tr>
                     <th>Restaurant</th>
                     <th>Customer</th>
+                    <th>Email</th>
                     <th>Phone</th>
                     <th>Date</th>
                     <th>Time Slot</th>
@@ -97,7 +98,7 @@
                   </tr>
                 </thead>
                 <tbody id="bookings-tbody">
-                  <tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:2rem;">Loading...</td></tr>
+                  <tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:2rem;">Loading...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -244,7 +245,7 @@
       const tbody = document.getElementById('bookings-tbody');
 
       if (!bookings.length) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:2rem;">No bookings yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:2rem;">No bookings yet.</td></tr>`;
         return;
       }
 
@@ -257,6 +258,7 @@
         <tr>
           <td><span style="color:var(--text)">${b.restaurant_name}</span></td>
           <td>${b.customer_name}</td>
+          <td><a href="mailto:${b.customer_email}" style="color:var(--text-muted);text-decoration:none;" title="${b.customer_email}">${b.customer_email || '—'}</a></td>
           <td>${b.customer_phone}</td>
           <td><span class="badge">${b.booking_date ? formatDate(b.booking_date) : '—'}</span></td>
           <td><span class="badge">${b.time_slot}</span></td>

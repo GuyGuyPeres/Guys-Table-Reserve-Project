@@ -145,6 +145,7 @@ bookingForm.onsubmit = async (e) => {
     time_slot: document.getElementById('selected-time').value,
     booking_date: bookingDate,
     customer_name: document.getElementById('cust-name').value,
+    customer_email: document.getElementById('cust-email').value,
     customer_phone: document.getElementById('cust-phone').value,
     guest_count: parseInt(document.getElementById('cust-guests').value) || 2
   };
