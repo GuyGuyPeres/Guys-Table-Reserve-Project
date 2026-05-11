@@ -13,6 +13,16 @@ let calMaxDate = null;
 const CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const CAL_MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+// ── HTML ESCAPE ──
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ── TOAST ──
 function showToast(msg, type = 'success') {
   const container = document.getElementById('toast-container');
@@ -40,13 +50,13 @@ async function loadRestaurants() {
   }
 
   grid.innerHTML = restaurantsData.map(r => `
-    <div class="card" onclick="openBooking('${r.id}')">
-      <img src="${r.image_url}" alt="${r.name.replace(/'/g, "&#39;")}">
+    <div class="card" onclick="openBooking('${escapeHtml(r.id)}')">
+      <img src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name)}">
       <div class="card-overlay"></div>
       <div class="card-content">
         <p class="card-tag">Fine Dining</p>
-        <h3>${r.name}</h3>
-        <p>${r.description}</p>
+        <h3>${escapeHtml(r.name)}</h3>
+        <p>${escapeHtml(r.description)}</p>
         <button class="btn-card">Reserve a Table →</button>
       </div>
     </div>

@@ -2,16 +2,19 @@ import logging
 from collections import defaultdict
 from time import time as _time
 from fastapi import FastAPI, HTTPException, Depends, Request, Query
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from bson import ObjectId
 from bson.errors import InvalidId
+from pymongo.errors import DuplicateKeyError
 from database import client, restaurants_collection, bookings_collection, admins_collection
 from models import RestaurantModel, BookingModel, CancelBookingRequest, AdminUser
 from auth import verify_password, create_access_token, get_current_admin
 from config import settings
+from email_utils import send_booking_confirmation
 from contextlib import asynccontextmanager
 import uvicorn
 
@@ -112,7 +115,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline'; "
-            "style-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' https: data:; "
             "object-src 'none'; "
             "frame-ancestors 'none'"
@@ -122,6 +126,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://54.236.63.157", "http://localhost:8000", "http://127.0.0.1:8000"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
+)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -213,9 +224,24 @@ async def book_table(request: Request, booking: BookingModel):
         booking_data = booking.model_dump()
         booking_data["restaurant_name"] = restaurant["name"]
 
-        insert_result = await bookings_collection.insert_one(booking_data)
+        try:
+            insert_result = await bookings_collection.insert_one(booking_data)
+        except DuplicateKeyError:
+            raise HTTPException(status_code=400, detail="Time slot already taken for this date.")
         booking_id = str(insert_result.inserted_id)
         logger.info(f"Booking {booking_id} created for '{restaurant['name']}' on {booking.booking_date} at {booking.time_slot}")
+
+        if booking.customer_email:
+            send_booking_confirmation(
+                customer_email=booking.customer_email,
+                customer_name=booking.customer_name,
+                restaurant_name=restaurant["name"],
+                booking_date=booking.booking_date,
+                time_slot=booking.time_slot,
+                guest_count=booking.guest_count,
+                booking_id=booking_id,
+            )
+
         return {"status": "success", "booking_id": booking_id}
     except HTTPException:
         raise
