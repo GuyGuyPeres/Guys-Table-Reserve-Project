@@ -335,24 +335,6 @@ Time slots are **not** stored as mutable state on the restaurant document. Inste
 
 ---
 
-## 🤝 Contributing
-
-Pull requests are welcome.
-
-<details>
-<summary>📐 <strong>Code Style Guidelines</strong></summary>
-
-- **Naming** - `snake_case` for Python identifiers; `camelCase` for JS functions and variables
-- **Single responsibility** - each route handler does one thing; validation and DB logic stay separate
-- **Error handling** - wrap all DB calls in try/except; always raise `HTTPException` with a clear `detail` message
-- **Types** - use Pydantic models for all request bodies; annotate function signatures
-- **Async** - all route handlers and DB calls must be `async`; use `asyncio.to_thread` for blocking operations
-- **Env vars** - never hardcode credentials; always load from `.env` via `config.py`
-
-</details>
-
----
-
 <div align="center">
 
 Made with ☕ and some hours in class.
