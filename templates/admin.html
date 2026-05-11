@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Guy's Table Reserve</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/static/style.css?v=5">
+  <link rel="stylesheet" href="/static/style.css?v=6">
 </head>
 <body>
 
   <!-- LOGIN PAGE -->
   <div id="login-page">
-    <nav class="navbar">
+    <nav class="navbar" id="navbar">
       <a href="/" class="navbar-logo">Guy's <span>Table Reserve</span></a>
       <div class="navbar-actions">
         <a href="/" class="btn-ghost">← Back to Site</a>
@@ -39,7 +39,7 @@
 
   <!-- DASHBOARD -->
   <div id="dashboard-page" class="hidden">
-    <nav class="navbar">
+    <nav class="navbar scrolled" id="dashboard-navbar">
       <a href="/" class="navbar-logo">Guy's <span>Table Reserve</span></a>
       <div class="navbar-actions">
         <div class="api-status" id="api-status" title="Checking...">
@@ -159,8 +159,8 @@
   <div id="delete-modal" class="modal">
     <div class="modal-content" style="max-width:420px;">
       <div class="modal-body" style="padding:2.5rem 2rem;text-align:center;">
-        <div style="width:52px;height:52px;border-radius:50%;background:rgba(192,57,43,0.12);border:1.5px solid rgba(192,57,43,0.35);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(184,50,50,0.1);border:1px solid rgba(184,50,50,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b83232" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
           </svg>
         </div>
@@ -168,7 +168,7 @@
         <p style="font-size:0.83rem;color:var(--text-muted);line-height:1.6;margin-bottom:2rem;">This action is permanent and cannot be undone.</p>
         <div style="display:flex;gap:0.75rem;">
           <button class="btn btn-secondary" onclick="closeDeleteModal()" style="flex:1;margin-top:0;">Cancel</button>
-          <button id="confirm-delete-btn" style="flex:1;display:inline-flex;align-items:center;justify-content:center;background:#c0392b;color:#fff;border:none;padding:0.85rem 2rem;border-radius:var(--radius);font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;">Delete</button>
+          <button id="confirm-delete-btn" style="flex:1;display:inline-flex;align-items:center;justify-content:center;background:#b83232;color:#fff;border:none;padding:0.85rem 2rem;border-radius:var(--radius);font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;">Delete</button>
         </div>
       </div>
     </div>
@@ -180,6 +180,14 @@
     let totalPages = 1;
     let pendingDeleteId = null;
     let pendingDeleteRow = null;
+
+    // Scroll-triggered navbar for login page
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+      window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 40);
+      }, { passive: true });
+    }
 
     function showDeleteModal(id, row) {
       pendingDeleteId = id;
