@@ -70,8 +70,8 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/CaptainPeres/RestaurantProject.git
-   cd RestaurantProject
+   git clone https://github.com/GuyGuyPeres/Guys-Table-Reserve-Project.git
+   cd Guys-Table-Reserve-Project
    ```
 
 2. **Create and activate a virtual environment**
@@ -172,7 +172,7 @@ curl -X POST http://localhost:8000/api/book \
   -d '{
     "restaurant_id": "64f1a2b3c4d5e6f7a8b9c0d1",
     "customer_name": "Guy Peres",
-    "customer_phone": "0529918459",
+    "customer_phone": "0500000000",
     "time_slot": "19:00",
     "booking_date": "2026-05-10",
     "guest_count": 2
@@ -194,7 +194,7 @@ curl -X POST http://localhost:8000/api/book \
 ```bash
 curl -X DELETE http://localhost:8000/api/bookings/6650fa3e2b1c4a0012abcdef \
   -H "Content-Type: application/json" \
-  -d '{ "customer_phone": "0529918459" }'
+  -d '{ "customer_phone": "0500000000" }'
 ```
 
 **Response** `200`
@@ -237,7 +237,7 @@ curl "http://localhost:8000/api/admin/bookings?page=1&limit=50" \
       "id": "6650fa3e2b1c4a0012abcdef",
       "restaurant_name": "Le Jardin",
       "customer_name": "Guy Peres",
-      "customer_phone": "0529918459",
+      "customer_phone": "0500000000",
       "booking_date": "2026-05-10",
       "time_slot": "19:00",
       "guest_count": 2
@@ -359,6 +359,6 @@ Made with ☕ and some hours in class.
 
 ⭐ **If this project helped you, consider giving it a star!** ⭐
 
-Built with 💻 by [CaptainPeres](https://github.com/GuyGuyPeres)
+Built with 💻 by [Guy Peres](https://github.com/GuyGuyPeres/Guys-Table-Reserve-Project)
 
 </div>
