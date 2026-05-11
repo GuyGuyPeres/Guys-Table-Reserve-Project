@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guy's Table Reserve - פריסה ב-AWS</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Heebo:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialiased;direction:rtl}
+
+:root{
+  --gold:#C9A84C;--gold-light:#E8C96F;--gold-dim:rgba(201,168,76,0.13);--gold-glow:rgba(201,168,76,0.35);
+  --bg:#0C0D0F;--text:#F0EDE8;--text-muted:#9B9690;--text-dim:#4A4845;
+  --surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.07);--border:rgba(255,255,255,0.07);
+  --danger:#E05252;--success:#4ADE80;
+  --fd:'Playfair Display',serif;--fb:'Heebo',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+
+/* CURSOR */
+#cur{position:fixed;top:0;left:0;width:8px;height:8px;background:var(--gold);border-radius:50%;
+  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s}
+
+/* DECK */
+.deck{width:100vw;height:100vh;position:relative;overflow:hidden}
+
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  align-items:flex-start;padding:0 8%;opacity:0;pointer-events:none}
+.slide.active{opacity:1;pointer-events:all}
+
+/* BACKGROUNDS */
+.bg{position:absolute;inset:0;background-size:cover;background-position:center;
+  filter:brightness(.3) saturate(.65);z-index:0}
+.ov{position:absolute;inset:0;
+  background:linear-gradient(225deg,rgba(12,13,15,.94) 0%,rgba(12,13,15,.72) 50%,rgba(12,13,15,.9) 100%);
+  z-index:1}
+.ov::after{content:'';position:absolute;inset:0;opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px}
+.sc{position:relative;z-index:2;width:100%;max-width:1380px;margin:0 auto}
+
+/* TRANSITION */
+#tov{position:fixed;inset:0;background:#000;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s ease}
+#tov.on{opacity:1;pointer-events:all}
+
+/* TYPOGRAPHY */
+.eyebrow{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.8rem}
+/* Title: RTL - slides in from the RIGHT */
+.slide-title{font-family:var(--fb);font-size:clamp(1.7rem,3.8vw,3.3rem);font-weight:700;
+  color:var(--text);line-height:1.12;margin-bottom:1.4rem;
+  opacity:0;transform:translateX(70px);
+  transition:opacity .25s cubic-bezier(.23,1,.32,1),transform .25s cubic-bezier(.23,1,.32,1)}
+.slide-title.in{opacity:1;transform:translateX(0)}
+.slide-title em{font-style:italic;color:var(--gold);font-family:var(--fd)}
+
+/* Divider flows from RIGHT in RTL */
+.divider{width:55px;height:2px;
+  background:linear-gradient(270deg,var(--gold),transparent);
+  margin-bottom:1.4rem;opacity:.7}
+
+/* STEPS */
+.step{opacity:0;transform:translateY(18px);transition:opacity .38s ease,transform .38s ease}
+.step.in{opacity:1;transform:translateY(0)}
+
+/* BULLETS */
+.blist{list-style:none;display:flex;flex-direction:column;gap:.8rem}
+.bi{display:flex;align-items:flex-start;gap:.7rem;font-size:clamp(.82rem,1.5vw,1rem);
+  color:var(--text-muted);line-height:1.6;text-align:right}
+.bi strong{color:var(--text);font-weight:600}
+.ico{font-size:1.05em;flex-shrink:0;margin-top:.1em;display:inline-block}
+.step.in .ico.sp{animation:isp .3s ease-out}
+.step.in .ico.bo{animation:ibo .4s cubic-bezier(.36,.07,.19,.97)}
+.step.in .ico.rd{animation:isp .3s ease-out;filter:drop-shadow(0 0 4px var(--danger))}
+@keyframes isp{from{transform:rotate(-180deg) scale(0)}to{transform:rotate(0) scale(1)}}
+@keyframes ibo{0%{transform:scale(0)}50%{transform:scale(1.35)}75%{transform:scale(.9)}100%{transform:scale(1)}}
+
+/* CALLOUT */
+.callout{border:1px solid var(--gold);border-right:3px solid var(--gold);border-left:none;
+  background:rgba(201,168,76,.07);padding:.85rem 1.4rem;border-radius:3px;
+  font-size:clamp(.8rem,1.4vw,.95rem);color:var(--text);line-height:1.6;text-align:right}
+.callout.step.in{animation:czoom .4s cubic-bezier(.34,1.56,.64,1) forwards,
+  cglow 2.2s .4s ease infinite;opacity:1;transform:translateY(0)}
+@keyframes czoom{from{transform:scale(.84) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes cglow{0%,100%{box-shadow:0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 22px rgba(201,168,76,.22)}}
+
+/* CODE - always LTR */
+.code{background:#080A0E;border:1px solid rgba(201,168,76,.18);border-radius:4px;
+  padding:1.1rem 1.4rem;font-family:var(--fm);font-size:clamp(.68rem,1.1vw,.84rem);
+  color:#A8C5E8;line-height:1.72;position:relative;overflow:hidden;
+  direction:ltr;text-align:left;unicode-bidi:embed}
+.code::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),transparent)}
+.ck{color:#C792EA}.cs{color:#C3E88D}.cv{color:#F78C6C}.cc{color:#546E7A}
+.cur-blink{display:inline-block;width:2px;height:.9em;background:var(--gold);
+  margin-left:2px;vertical-align:text-bottom;animation:blink .8s infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse;font-family:var(--fm);
+  font-size:clamp(.68rem,1.1vw,.82rem);direction:ltr;text-align:left}
+.tbl th{color:var(--gold);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;
+  padding:.45rem .7rem;border-bottom:1px solid rgba(201,168,76,.28);text-align:left}
+.tbl td{color:var(--text-muted);padding:.45rem .7rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.tbl .hl td{color:var(--text);background:rgba(201,168,76,.06)}
+.tbl .ok{color:var(--success)}.tbl .no{color:var(--danger)}
+
+/* LAYOUTS */
+.col2{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
+.col3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.6rem}
+
+/* ARCH */
+.anode{background:var(--surface);border:1px solid var(--border);border-radius:4px;
+  padding:.55rem .9rem;font-size:clamp(.68rem,1.15vw,.8rem);color:var(--text);
+  text-align:center;position:relative;white-space:nowrap}
+.anode.gold{border-color:rgba(201,168,76,.4);background:var(--gold-dim)}
+.anode small{display:block;font-size:.58rem;color:var(--text-muted);margin-top:.2rem}
+.aarr{text-align:center;color:var(--gold);opacity:.65;padding:.2rem 0;font-size:.85rem}
+.iam-badge{position:absolute;top:-9px;left:-9px;background:var(--gold);color:#0C0D0F;
+  font-size:.5rem;font-weight:700;letter-spacing:.08em;padding:.18rem .38rem;
+  border-radius:2px;text-transform:uppercase;white-space:nowrap;direction:ltr}
+
+/* CARD */
+.card{background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-top:2px solid var(--gold);border-radius:4px;padding:1.3rem;text-align:right}
+.card-ttl{font-family:var(--fb);font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.7rem}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:.5rem;direction:rtl;
+  background:rgba(201,168,76,.11);border:1px solid rgba(201,168,76,.38);
+  color:var(--gold);padding:.55rem 1.3rem;border-radius:100px;
+  font-size:clamp(.72rem,1.2vw,.88rem);font-weight:500;letter-spacing:.03em}
+.badge.step.in{animation:pbadge 2.5s ease infinite;opacity:1;transform:translateY(0)}
+@keyframes pbadge{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 9px rgba(201,168,76,.13)}}
+
+/* CHECK ITEMS */
+.ci{display:flex;align-items:flex-start;gap:.55rem;
+  font-size:clamp(.73rem,1.25vw,.86rem);color:var(--text-muted);
+  line-height:1.5;margin-bottom:.55rem;flex-direction:row-reverse;text-align:right}
+.ci .ok{color:var(--success);flex-shrink:0}
+.ci code{color:var(--gold);font-family:var(--fm);font-size:.9em;direction:ltr;unicode-bidi:embed}
+.col-ttl{font-family:var(--fb);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.9rem;padding-bottom:.45rem;
+  border-bottom:1px solid rgba(201,168,76,.2);text-align:right}
+
+/* FLOW */
+.fstep{background:var(--surface);border:1px solid var(--border);border-radius:3px;
+  padding:.35rem .7rem;font-size:.73rem;color:var(--text-muted);text-align:center}
+.farr{text-align:center;color:var(--gold);font-size:.72rem;padding:.08rem 0;opacity:.6}
+
+/* COST TABLE */
+.ctbl{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:.77rem;direction:ltr;text-align:left}
+.ctbl th{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
+  padding:.45rem .7rem;border-bottom:1px solid rgba(201,168,76,.28);text-align:left}
+.ctbl td{padding:.45rem .7rem;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.04)}
+.ctbl .tot td{color:var(--success);font-weight:700;border-top:1px solid rgba(201,168,76,.2);border-bottom:none}
+
+/* EMAIL MOCKUP */
+.email{background:#13141C;border:1px solid rgba(201,168,76,.22);border-radius:5px;
+  overflow:hidden;font-size:.76rem;box-shadow:0 0 40px rgba(201,168,76,.09)}
+.email-hd{background:linear-gradient(135deg,#1A1C28,#0E0F18);padding:.9rem 1.1rem;
+  border-bottom:1px solid rgba(201,168,76,.18);display:flex;align-items:center;gap:.7rem}
+.email-logo{font-family:var(--fd);font-size:.95rem;color:var(--gold);font-weight:700;direction:ltr}
+.email-bd{padding:.9rem 1.1rem;color:var(--text-muted);line-height:1.7;direction:rtl;text-align:right}
+.erow{display:flex;justify-content:space-between;padding:.28rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.ekey{color:var(--text-dim);font-size:.62rem;letter-spacing:.05em}
+.eval{color:var(--text);font-weight:500;direction:ltr;unicode-bidi:embed}
+.eid{font-family:var(--fm);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);
+  color:var(--gold);padding:.28rem .55rem;border-radius:3px;font-size:.66rem;
+  margin-top:.5rem;display:inline-block;direction:ltr}
+
+/* GOLD SWEEP */
+.sweep{height:3px;background:var(--gold);width:0;
+  box-shadow:0 0 14px var(--gold-glow);margin:1.4rem 0 .9rem}
+.sweep.in{animation:sw 1s .1s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes sw{from{width:0}to{width:100%}}
+
+/* UI */
+#pb{position:fixed;bottom:0;left:0;height:2px;background:var(--gold);z-index:500;
+  transition:width .4s ease;box-shadow:0 0 8px var(--gold-glow)}
+#ctr{position:fixed;bottom:1.4rem;left:2rem;font-family:var(--fm);
+  font-size:.68rem;color:var(--text-dim);z-index:500;letter-spacing:.1em;direction:ltr}
+.hint{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);
+  font-family:var(--fm);font-size:.6rem;color:var(--text-dim);
+  letter-spacing:.06em;z-index:500;text-align:center;white-space:nowrap;direction:ltr}
+
+/* SVG ICONS */
+.icon{width:1em;height:1em;display:inline-block;vertical-align:-.125em;flex-shrink:0;overflow:visible}
+
+/* NOTES */
+#notes{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:800;
+  display:flex;flex-direction:column;padding:3rem;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+#notes.on{opacity:1;pointer-events:all}
+#ntitle{font-family:var(--fb);font-size:1.4rem;color:var(--gold);margin-bottom:1rem;font-weight:700}
+#ntext{font-size:1.2rem;color:var(--text);line-height:1.85;max-width:820px}
+#nhint{margin-top:auto;font-size:.75rem;color:var(--text-dim);font-family:var(--fm);direction:ltr}
+</style>
+</head>
+<body>
+
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L10 22l9.5-11.5H13z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+<symbol id="i-server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-at" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+<symbol id="i-dollar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+<symbol id="i-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></symbol>
+</defs></svg>
+
+<div id="cur"></div>
+<div id="tov"></div>
+<div id="pb"></div>
+<div id="ctr">1 / 8</div>
+<div class="hint">SPACE · CLICK - advance &nbsp;|&nbsp; ← → - navigate &nbsp;|&nbsp; S - speaker notes</div>
+
+<div id="notes">
+  <div id="ntitle">הערות מצגת</div>
+  <div id="ntext"></div>
+  <div id="nhint">Press S or ESC to close · ← → to navigate between slides</div>
+</div>
+
+<div class="deck" id="deck">
+
+<!-- ━━━━━━━━━━ שקף 1: כותרת ━━━━━━━━━━ -->
+<section class="slide active" data-slide="1" data-steps="4"
+  data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
+  <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=80&auto=format&fit=crop')"></div>
+  <div class="ov"></div>
+  <div class="sc" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:75vh">
+    <div class="slide-title" style="font-family:'Playfair Display',serif;font-size:clamp(3.2rem,7.5vw,7.5rem);font-weight:900;letter-spacing:-.02em;text-align:center;line-height:.98;margin-bottom:0;direction:ltr">
+      Guy's <em>Table</em><br>Reserve
+    </div>
+    <div class="step" data-step="1" style="margin-top:1.3rem;max-width:700px;text-align:center">
+      <p style="font-size:clamp(.95rem,1.9vw,1.35rem);color:var(--text-muted);letter-spacing:.02em;line-height:1.65">
+        מערכת הזמנת תורים למסעדות,<br>
+        <span style="color:var(--text)">פריסה על AWS</span>
+      </p>
+    </div>
+    <div class="badge step" data-step="2" style="margin-top:1.9rem">
+      <svg class="icon" style="color:var(--gold)"><use href="#i-star"/></svg><span>שירות AWS מרכזי: Simple Email Service (SES)</span>
+    </div>
+    <div class="step" data-step="3" style="margin-top:2rem">
+      <p style="font-family:var(--fd);font-style:italic;font-size:1.05rem;color:var(--text-muted);direction:ltr">Guy Peres</p>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ שקף 2: הבעיה ━━━━━━━━━━ -->
+<section class="slide" data-slide="2" data-steps="6"
+  data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
+  <div class="ov"></div>
+  <div class="sc">
+    <p class="eyebrow">הבעיה</p>
+    <h2 class="slide-title">"הזמנה ללא אישור היא<br><em>הזמנה שהלקוח ישכח ממנה</em>"</h2>
+    <div class="divider"></div>
+    <ul class="blist" style="max-width:780px">
+      <li class="step bi" data-step="1"><svg class="icon ico rd"><use href="#i-x"/></svg><span>הלקוח מזמין שולחן - <strong>לא מקבל פידבק בשום פלטפורמה</strong> - לא יודע אם ההזמנה עברה</span></li>
+      <li class="step bi" data-step="2"><svg class="icon ico rd"><use href="#i-x"/></svg><span>Gmail / SMTP: <strong>מוגבל בקצב שליחה, נוחת בספאם,</strong> מפתחות וסיסמאות מוטמעות בקוד המקור</span></li>
+      <li class="step bi" data-step="3"><svg class="icon ico rd"><use href="#i-x"/></svg><span>סיסמאות מוטמעות = <strong>פרצת אבטחה מיידית</strong> אם הריפוזיטורי גלוי לציבור</span></li>
+      <li class="step bi" data-step="4"><svg class="icon ico rd"><use href="#i-x"/></svg><span>אין פידבק ללקוח = <strong>יותר היעדרויות, יותר שיחות תמיכה טכנית,</strong> חווית משתמש גרועה יותר</span></li>
+      <li class="step bi" data-step="5"><svg class="icon ico rd"><use href="#i-x"/></svg><span>אישור ידני על ידי המסעדה? <strong>לא "סקיילאבילי". לא אמין.</strong></span></li>
+    </ul>
+    <div class="callout step" data-step="6" style="margin-top:1.4rem;max-width:780px">
+       אז מצאתי פיתרון "סקיילאבילי" פשוט בAWS - <strong>ולכן הגיע AWS SES</strong>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ שקף 3: סקירת SES ━━━━━━━━━━ -->
+<section class="slide" data-slide="3" data-steps="7"
+  data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
+  <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1920&q=80&auto=format&fit=crop')"></div>
+  <div class="ov"></div>
+  <div class="sc">
+    <p class="eyebrow">סקירת שירות</p>
+    <h2 class="slide-title">AWS Simple Email Service -<br><em>אימייל ארגוני, ללא מורכבות</em></h2>
+    <div class="divider"></div>
+    <div class="col2" style="gap:2.5rem">
+      <ul class="blist">
+        <li class="step bi" data-step="1"><svg class="icon ico bo"><use href="#i-mail"/></svg><span>שירות אימייל מנוהל בענן - <strong>AWS מטפל במסירה, במוניטין ובשגיאות</strong></span></li>
+        <li class="step bi" data-step="2"><svg class="icon ico bo"><use href="#i-tag"/></svg><span><strong>62,000 אימיילים לחודש בחינם</strong> ממופע EC2 - כמות שמספיקה בהחלט לצורכי הפרויקט הנוכחי</span></li>
+        <li class="step bi" data-step="3"><svg class="icon ico bo"><use href="#i-key"/></svg><span>משתלב עם <strong>IAM - ללא סיסמאות, ללא מפתחות API,</strong> רק הרשאות</span></li>
+        <li class="step bi" data-step="4"><svg class="icon ico bo"><use href="#i-inbox"/></svg><span>מצב Sandbox לבדיקות → <strong>מצב Production ללקוחות אמיתיים</strong></span></li>
+        <li class="step bi" data-step="5"><svg class="icon ico bo"><use href="#i-globe"/></svg><span>בשימוש של <strong>Netflix, Reddit ו-Airbnb</strong> לאימיילים עסקיים בקנה מידה גדול</span></li>
+      </ul>
+      <div>
+        <div class="callout step" data-step="6" style="margin-bottom:1rem;font-size:.83rem">
+          SES מול Gmail - <strong> השירות SES של AWS מנצח בכל פעם</strong> עבור אפליקציות שפרוסות ב-AWS
+        </div>
+        <div class="step code" data-step="7" style="padding:.75rem 1rem">
+          <table class="tbl">
+            <thead><tr><th>Service</th><th>Free Tier</th><th>Keys?</th><th>AWS-native?</th></tr></thead>
+            <tbody>
+              <tr><td>Gmail</td><td>500/day</td><td class="no">Yes ✗</td><td class="no">No</td></tr>
+              <tr><td>SendGrid</td><td>100/day</td><td class="no">Yes ✗</td><td class="no">No</td></tr>
+              <tr class="hl"><td><strong>AWS SES</strong></td><td><strong>62k/month</strong></td><td class="ok">No (IAM) ✓</td><td class="ok">Yes ✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ שקף 4: ארכיטקטורה ━━━━━━━━━━ -->
+<section class="slide" data-slide="4" data-steps="10"
+  data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
+  <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80&auto=format&fit=crop')"></div>
+  <div class="ov"></div>
+  <div class="sc">
+    <p class="eyebrow">ארכיטקטורה</p>
+    <h2 class="slide-title">כיצד <em>הכל מתחבר</em></h2>
+    <div class="divider"></div>
+    <div style="display:flex;gap:4rem;align-items:flex-start">
+      <!-- Main flow -->
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0">
+        <div class="step anode" data-step="1" style="background:rgba(52,152,219,.1);border-color:rgba(52,152,219,.38);width:100%;max-width:280px"><svg class="icon" style="color:#3498db"><use href="#i-globe"/></svg> הדפדפן של הלקוח</div>
+        <div class="step aarr" data-step="2">↓</div>
+        <div class="step anode" data-step="3" style="background:rgba(39,174,96,.1);border-color:rgba(39,174,96,.35);width:100%;max-width:280px;position:relative">
+          <svg class="icon" style="color:#27ae60"><use href="#i-server"/></svg> Nginx on EC2 (port 80)
+          <small>פרוקסי הפוך + קבצים סטטיים</small>
+          <span class="iam-badge">IAM Role ✓</span>
+        </div>
+        <div class="step aarr" data-step="4">↓</div>
+        <div class="step anode" data-step="5" style="background:rgba(243,156,18,.09);border-color:rgba(243,156,18,.33);width:100%;max-width:280px">
+          <svg class="icon" style="color:#f39c12"><use href="#i-zap"/></svg> FastAPI / Uvicorn (port 8000)
+          <small>כל לוגיקת ההזמנות נמצאת כאן</small>
+        </div>
+        <div class="step aarr" data-step="6">↓</div>
+        <div class="step anode" data-step="7" style="background:rgba(39,174,96,.09);border-color:rgba(39,174,96,.33);width:100%;max-width:280px">
+          <svg class="icon" style="color:#27ae60"><use href="#i-db"/></svg> MongoDB Atlas
+          <small>מסד נתונים בענן, ללא ניהול</small>
+        </div>
+      </div>
+      <!-- Email branch -->
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding-top:4.5rem">
+        <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem">תהליך שליחת האימייל </div>
+        <div class="step anode" data-step="8" style="background:rgba(243,156,18,.09);border-color:rgba(243,156,18,.33);width:100%;max-width:250px"><svg class="icon" style="color:#f39c12"><use href="#i-zap"/></svg> FastAPI → boto3</div>
+        <div class="step aarr" data-step="8">↓</div>
+        <div class="step anode gold" data-step="8" style="width:100%;max-width:250px"><svg class="icon" style="color:var(--gold)"><use href="#i-mail"/></svg> AWS SES</div>
+        <div class="step aarr" data-step="9">↓</div>
+        <div class="step anode" data-step="9" style="background:rgba(52,152,219,.09);border-color:rgba(52,152,219,.33);width:100%;max-width:250px"><svg class="icon" style="color:#3498db"><use href="#i-at"/></svg> תיבת הדואר של הלקוח</div>
+      </div>
+    </div>
+    <div class="callout step" data-step="10" style="margin-top:1.2rem">
+      <svg class="icon" style="color:var(--gold)"><use href="#i-bulb"/></svg> מופע EC2 אחד. כתובת IP ציבורית אחת. <strong>$0 לחודש ב-AWS Free Tier.</strong>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ שקף 5: שלבי הפריסה ━━━━━━━━━━ -->
+<section class="slide" data-slide="5" data-steps="4"
+  data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
+  <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=1920&q=80&auto=format&fit=crop')"></div>
+  <div class="ov" style="background:linear-gradient(135deg,rgba(12,13,15,.95) 0%,rgba(0,18,8,.78) 50%,rgba(12,13,15,.93) 100%)"></div>
+  <div class="sc">
+    <p class="eyebrow">שלבי הפריסה</p>
+    <h2 class="slide-title">מה בניתי ב-AWS -<br><em>שלב אחר שלב</em></h2>
+    <div class="divider"></div>
+    <div class="col2" style="gap:2.2rem;margin-bottom:1.1rem">
+      <div class="step" data-step="1">
+        <div class="col-ttl"><svg class="icon"><use href="#i-gear"/></svg> תשתית</div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>הפעלת EC2 t3.micro - Amazon Linux 2023</span></div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>Security Group: פורטים 80, 443, 22 (ה-IP שלנו בלבד)</span></div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>Nginx פרוקסי הפוך, הפעלה אוטומטית מחדש עם systemd</span></div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>סביבת venv ב-Python, כל התלויות מתוך <code>requirements.txt</code></span></div>
+      </div>
+      <div class="step" data-step="2">
+        <div class="col-ttl"><svg class="icon"><use href="#i-mail"/></svg> אינטגרציית SES</div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>כתובת אימייל השולח אומתה ב-SES Console</span></div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>נוצר IAM Role: <code>restaurant-ses-role</code></span></div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>Inline Policy: <code>ses:SendEmail</code> בלבד, נעול לשולח אחד</span></div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>IAM Role חובר ל-EC2 - boto3 מאמת אוטומטית</span></div>
+        <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span><code>email_utils.py</code> נוצר וחובר לנקודת הקצה של ההזמנות</span></div>
+      </div>
+    </div>
+    <div class="step code" data-step="3" style="max-width:520px;font-size:.79rem">
+      <span class="cc">// IAM Inline Policy</span><br>
+      <span id="iam-tw"></span><span class="cur-blink" id="tw-cur"></span>
+    </div>
+    <div class="callout step" data-step="4" style="margin-top:.9rem;max-width:620px">
+      <svg class="icon" style="color:var(--gold)"><use href="#i-lock"/></svg> <strong>אין AWS_ACCESS_KEY בשום מקום בקוד. אף פעם.</strong>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ שקף 6: הדגמה ━━━━━━━━━━ -->
+<section class="slide" data-slide="6" data-steps="6"
+  data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
+  <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1920&q=80&auto=format&fit=crop')"></div>
+  <div class="ov"></div>
+  <div class="sc">
+    <p class="eyebrow">הדגמה חיה</p>
+    <h2 class="slide-title">בואו נראה את זה עובד <em>בזמן אמת</em></h2>
+    <div class="divider"></div>
+    <div class="col2" style="gap:2.5rem">
+      <div>
+        <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem">תהליך ההזמנה</div>
+        <div class="step" data-step="1" style="display:flex;flex-direction:column;gap:.18rem">
+          <div class="fstep">הלקוח נכנס לאתר</div><div class="farr">↓</div>
+          <div class="fstep">בוחר מסעדה</div><div class="farr">↓</div>
+          <div class="fstep">בוחר תאריך ושעה</div><div class="farr">↓</div>
+          <div class="fstep">מזין אימייל ← לוחץ אישור</div><div class="farr">↓</div>
+          <div class="fstep" style="border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.06)">ההזמנה נשמרת ב-MongoDB ✓</div>
+          <div class="farr">↓</div>
+          <div class="fstep" style="border-color:rgba(201,168,76,.38);background:var(--gold-dim)">SES מופעל ← אימייל נשלח</div>
+          <div class="farr">↓</div>
+          <div class="fstep" style="border-color:rgba(52,152,219,.35);background:rgba(52,152,219,.07)"><svg class="icon" style="color:#3498db"><use href="#i-at"/></svg> אישור מגיע לתיבת הדואר</div>
+        </div>
+        <div style="margin-top:.9rem;display:flex;flex-direction:column;gap:.45rem">
+          <div class="step bi" data-step="3"><svg class="icon ico bo"><use href="#i-eye"/></svg><span>הלקוח מגיש הזמנה עם כתובת אימייל אמיתית</span></div>
+          <div class="step bi" data-step="4"><svg class="icon ico bo"><use href="#i-inbox"/></svg><span>אימייל האישור מגיע <strong>תוך 3 שניות</strong></span></div>
+          <div class="step bi" data-step="5"><svg class="icon ico bo"><use href="#i-check"/></svg><span>פאנל הניהול מציג את ההזמנה - SES עוקב אחר המסירה ב-CloudWatch</span></div>
+        </div>
+      </div>
+      <div class="step" data-step="2">
+        <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem">אימייל האישור</div>
+        <div class="email">
+          <div class="email-hd"><div class="email-logo">Guy's Table Reserve</div></div>
+          <div class="email-bd">
+            <p style="color:var(--text);font-weight:600;margin-bottom:.7rem;font-size:.84rem">השולחן שלך אושר ✓</p>
+            <div class="erow"><span class="ekey">מסעדה</span><span class="eval">Le Jardin</span></div>
+            <div class="erow"><span class="ekey">תאריך</span><span class="eval">May 15, 2026</span></div>
+            <div class="erow"><span class="ekey">שעה</span><span class="eval">20:00</span></div>
+            <div class="erow"><span class="ekey">אורחים</span><span class="eval">2</span></div>
+            <div style="margin-top:.65rem">
+              <div class="ekey" style="margin-bottom:.28rem">מזהה הזמנה</div>
+              <div class="eid">683f2a4b1c8e0012ab4cde97</div>
+            </div>
+            <p style="margin-top:.65rem;font-size:.65rem;color:var(--text-dim)">שמור מזהה זה לביטול ההזמנה באתר שלנו.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout step" data-step="6" style="margin-top:.9rem">
+      <svg class="icon" style="color:var(--gold)"><use href="#i-zap"/></svg> מהגשת הטופס ועד לתיבת הדואר - <strong>פחות מ-3 שניות, ללא כל עבודה ידנית</strong>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ שקף 7: אבטחה ועלויות ━━━━━━━━━━ -->
+<section class="slide" data-slide="7" data-steps="7"
+  data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
+  <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=1920&q=80&auto=format&fit=crop')"></div>
+  <div class="ov"></div>
+  <div class="sc">
+    <p class="eyebrow">אבטחה ועלויות</p>
+    <h2 class="slide-title">מאובטח מהיסוד.<br><em>חינמי כברירת מחדל.</em></h2>
+    <div class="divider"></div>
+    <div class="col2" style="gap:2.5rem">
+      <div>
+        <div class="col-ttl"><svg class="icon"><use href="#i-shield"/></svg> אבטחה</div>
+        <div class="step bi" data-step="1"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>IAM Role על EC2 - <strong>אפס פרטי גישה מוטמעים בקוד</strong></span></div>
+        <div class="step bi" data-step="2"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>הרשאה מינימלית: <code style="color:var(--gold);font-family:var(--fm);font-size:.9em">ses:SendEmail</code> בלבד, <strong>שולח אחד דרך Condition Block</strong></span></div>
+        <div class="step bi" data-step="3"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>קובץ <code style="color:var(--gold);font-family:var(--fm);font-size:.9em">.env</code> עם <code style="color:var(--gold);font-family:var(--fm);font-size:.9em">chmod 600</code> - <strong>רק משתמש האפליקציה קורא את הסודות</strong></span></div>
+        <div class="step bi" data-step="4"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>הגבלת קצב: <strong>3 הזמנות לדקה לכל IP</strong> - מונע שימוש לרעה</span></div>
+        <div class="step bi" data-step="5"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>הגנת XSS, הגבלות CORS, כותרות CSP - <strong>הגנת Frontend מלאה</strong></span></div>
+      </div>
+      <div class="step" data-step="6">
+        <div class="col-ttl"><svg class="icon"><use href="#i-dollar"/></svg> פירוט עלויות</div>
+        <div class="code" style="padding:.75rem 1rem">
+          <table class="ctbl">
+            <thead><tr><th>Resource</th><th>Free Tier</th><th>Cost</th></tr></thead>
+            <tbody>
+              <tr><td>EC2 t3.micro</td><td>750 hrs/mo × 12mo</td><td class="ok">$0</td></tr>
+              <tr><td>MongoDB Atlas</td><td>512 MB forever (M0)</td><td class="ok">$0</td></tr>
+              <tr><td>AWS SES</td><td>62,000 emails/month</td><td class="ok">$0</td></tr>
+              <tr class="tot"><td colspan="2"><strong>Total</strong></td><td><strong>$0 / month</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout step" data-step="7" style="margin-top:.75rem;font-size:.8rem">
+          לאחר סיום המכסה החינמית: ~$7.59 לחודש &nbsp;·&nbsp; עצירת המופע בזמן אי-שימוש: ~$0.80 לחודש
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ שקף 8: סיכום ━━━━━━━━━━ -->
+<section class="slide" data-slide="8" data-steps="5"
+  data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
+  <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1920&q=80&auto=format&fit=crop')"></div>
+  <div class="ov"></div>
+  <div class="sc">
+    <p class="eyebrow">סיכום</p>
+    <h2 class="slide-title">נבנה. נפרס.<br>מאובטח. <em>חי.</em></h2>
+    <div class="divider"></div>
+    <div class="col3">
+      <div class="step card" data-step="1">
+        <div class="card-ttl"><svg class="icon" style="color:var(--gold)"><use href="#i-cap"/></svg> מה למדתי</div>
+        <div class="ci"><span style="color:var(--success);flex-shrink:0">→</span><span>IAM Roles מסלקים קטגוריה שלמה של חולשות אישורי גישה</span></div>
+        <div class="ci"><span style="color:var(--success);flex-shrink:0">→</span><span>Production שובר דברים שה-localhost אף פעם לא יגלה - רשימות IP, הרשאות, פרוקסים</span></div>
+        <div class="ci"><span style="color:var(--success);flex-shrink:0">→</span><span>AWS Free Tier מאפשר לספק מוצרים איכותיים למשתמשים אמיתיים ב-$0</span></div>
+      </div>
+      <div class="step card" data-step="2">
+        <div class="card-ttl"><svg class="icon" style="color:var(--danger)"><use href="#i-alert"/></svg> מה היה לי קשה</div>
+        <div class="ci"><span style="color:var(--danger);flex-shrink:0">→</span><span>SES Sandbox - רק אימיילים מאומתים יכולים לקבל הודעות בזמן בדיקות</span></div>
+        <div class="ci"><span style="color:var(--danger);flex-shrink:0">→</span><span>רשימת ה-IP WHITELIST של MongoDB Atlas חסמה את EC2 עד שהוספנו את כתובת השרת</span></div>
+        <div class="ci"><span style="color:var(--danger);flex-shrink:0">→</span><span>Nginx לא החזיר קבצים סטטיים עד שתיקנו הרשאות ספריית הבית</span></div>
+      </div>
+      <div class="step card" data-step="3">
+        <div class="card-ttl"><svg class="icon" style="color:var(--gold)"><use href="#i-rocket"/></svg> צעדים פוטנציאלים להמשך</div>
+        <div class="ci"><span style="color:var(--gold);flex-shrink:0">→</span><span>דומיין מותאם אישית + HTTPS עם Let's Encrypt</span></div>
+        <div class="ci"><span style="color:var(--gold);flex-shrink:0">→</span><span>בקשת גישת Production ב-SES - שליחה לכל כתובת אימייל</span></div>
+        <div class="ci"><span style="color:var(--gold);flex-shrink:0">→</span><span>Redis להגבלת קצב עקבית גם לאחר הפעלות מחדש</span></div>
+        <div class="ci"><span style="color:var(--gold);flex-shrink:0">→</span><span>טיפול בשגיאות ותלונות SES להגנה על מוניטין השולח (אני לא רוצה להפוך לספאם)</span></div>
+      </div>
+    </div>
+    <div class="sweep step" data-step="4" id="sweep"></div>
+    <div class="step" data-step="5" style="text-align:center;margin-top:.4rem">
+      <p style="font-family:var(--fd);font-style:italic;font-size:clamp(1rem,2.2vw,1.5rem);color:var(--text-muted)">
+         כל רעיון צריך מתכנת שיאמין בו
+        <span style="color:var(--gold)"> - גיא</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+// CURSOR
+const cur = document.getElementById('cur');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top = e.clientY + 'px';
+});
+
+// STATE
+let slide = 1, step = 0, busy = false, notesOn = false;
+const TOTAL = 8;
+
+const tov   = document.getElementById('tov');
+const pb    = document.getElementById('pb');
+const ctr   = document.getElementById('ctr');
+const notes = document.getElementById('notes');
+const nttl  = document.getElementById('ntitle');
+const ntxt  = document.getElementById('ntext');
+
+const getEl = n => document.querySelector(`.slide[data-slide="${n}"]`);
+const maxSt = n => parseInt(getEl(n)?.dataset.steps || '0');
+
+function initSlide(n) {
+  const el = getEl(n);
+  if (!el) return;
+  el.querySelectorAll('.step').forEach(s => s.classList.remove('in'));
+  const t = el.querySelector('.slide-title');
+  if (t) { t.classList.remove('in'); requestAnimationFrame(() => setTimeout(() => t.classList.add('in'), 40)); }
+}
+
+function showStep(n, s) {
+  getEl(n)?.querySelectorAll(`.step[data-step="${s}"]`).forEach(el => {
+    el.classList.add('in');
+    if (n === 5 && s === 3) startTypewriter();
+    if (n === 8 && s === 4) document.getElementById('sweep')?.classList.add('in');
+  });
+}
+
+function advance() {
+  if (busy) return;
+  if (step < maxSt(slide)) { step++; showStep(slide, step); }
+  else if (slide < TOTAL)   { goTo(slide + 1); }
+}
+
+function goBack() {
+  if (busy || slide <= 1) return;
+  goTo(slide - 1);
+}
+
+function goTo(n) {
+  if (n === slide || busy) return;
+  busy = true;
+  tov.classList.add('on');
+  setTimeout(() => {
+    getEl(slide).classList.remove('active');
+    slide = n; step = 0;
+    getEl(slide).classList.add('active');
+    initSlide(slide);
+    updateUI();
+    setTimeout(() => { tov.classList.remove('on'); busy = false; }, 200);
+  }, 200);
+}
+
+function updateUI() {
+  ctr.textContent = `${slide} / ${TOTAL}`;
+  pb.style.width  = `${(slide / TOTAL) * 100}%`;
+  const el = getEl(slide);
+  nttl.textContent = `שקף ${slide} - הערות מצגת`;
+  ntxt.textContent = el?.dataset.notes || '';
+}
+
+// TYPEWRITER: IAM Policy
+const IAM_TEXT = `{\n  <span class="ck">"Effect"</span>: <span class="cs">"Allow"</span>,\n  <span class="ck">"Action"</span>: <span class="cs">"ses:SendEmail"</span>,\n  <span class="ck">"Condition"</span>: {\n    <span class="ck">"StringEquals"</span>: {\n      <span class="ck">"ses:FromAddress"</span>:\n        <span class="cs">"guyguyperes@gmail.com"</span>\n    }\n  }\n}`;
+
+let twRunning = false;
+function startTypewriter() {
+  if (twRunning) return;
+  twRunning = true;
+  const target = document.getElementById('iam-tw');
+  const twcur  = document.getElementById('tw-cur');
+  if (!target) return;
+  let i = 0, out = '', inTag = false;
+  function tick() {
+    if (i >= IAM_TEXT.length) { if (twcur) twcur.style.display = 'none'; return; }
+    const ch = IAM_TEXT[i];
+    if (ch === '<') { inTag = true; out += ch; }
+    else if (ch === '>') { inTag = false; out += ch; target.innerHTML = out; i++; tick(); return; }
+    else { out += ch; if (!inTag) target.innerHTML = out; }
+    i++;
+    setTimeout(tick, inTag ? 0 : 20);
+  }
+  tick();
+}
+
+// KEYBOARD
+document.addEventListener('keydown', e => {
+  if (notesOn) {
+    if (e.key === 's' || e.key === 'S' || e.key === 'Escape') toggleNotes();
+    else if (e.key === 'ArrowRight') goTo(Math.min(slide + 1, TOTAL));
+    else if (e.key === 'ArrowLeft')  goTo(Math.max(slide - 1, 1));
+    return;
+  }
+  if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); advance(); }
+  else if (e.key === 'ArrowLeft')  { e.preventDefault(); goBack(); }
+  else if (e.key === 's' || e.key === 'S') toggleNotes();
+  else if (e.key === 'Escape' && notesOn) toggleNotes();
+});
+
+// CLICK
+document.getElementById('deck').addEventListener('click', e => {
+  if (!e.target.closest('a,button,input')) advance();
+});
+
+// NOTES
+function toggleNotes() {
+  notesOn = !notesOn;
+  notes.classList.toggle('on', notesOn);
+}
+
+// BOOT
+initSlide(1);
+updateUI();
+</script>
+</body>
+</html>
