@@ -4,54 +4,149 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-2" parent="1" style="text;html=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1;" value="Guy&#39;s Table Reserve - System Architecture" vertex="1">
+
+        <!-- Title -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-2" parent="1"
+          style="text;html=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1;"
+          value="Guy&#39;s Table Reserve - System Architecture" vertex="1">
           <mxGeometry height="45" width="520" x="225" y="257" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;verticalAlign=top;spacingTop=10;arcSize=3;" value="AWS EC2  (t3.micro · Amazon Linux 2023)" vertex="1">
-          <mxGeometry height="340" width="415" x="240" y="347" as="geometry" />
+
+        <!-- EC2 box (height extended to fit new elements) -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-3" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;verticalAlign=top;spacingTop=10;arcSize=3;"
+          value="AWS EC2  (t3.micro · Amazon Linux 2023)" vertex="1">
+          <mxGeometry height="420" width="415" x="240" y="347" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" value="&lt;b&gt;User&lt;/b&gt;&lt;br&gt;Browser" vertex="1">
+
+        <!-- Namecheap DNS (above browser) -->
+        <mxCell id="new-namecheap" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;"
+          value="&lt;b&gt;Namecheap DNS&lt;/b&gt;&lt;br&gt;guyperes.dev → 54.236.63.157" vertex="1">
+          <mxGeometry height="55" width="155" x="50" y="362" as="geometry" />
+        </mxCell>
+
+        <!-- User Browser -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-4" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;"
+          value="&lt;b&gt;User&lt;/b&gt;&lt;br&gt;Browser" vertex="1">
           <mxGeometry height="60" width="120" x="70" y="452" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="&lt;b&gt;Admin&lt;/b&gt;&lt;br&gt;Dashboard" vertex="1">
+
+        <!-- Admin Dashboard -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-5" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;"
+          value="&lt;b&gt;Admin&lt;/b&gt;&lt;br&gt;Dashboard" vertex="1">
           <mxGeometry height="60" width="120" x="70" y="602" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="&lt;b&gt;Nginx&lt;/b&gt;&lt;br&gt;Reverse Proxy | :80" vertex="1">
-          <mxGeometry height="65" width="150" x="270" y="452" as="geometry" />
+
+        <!-- Nginx (updated: HTTPS + redirect) -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-6" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;"
+          value="&lt;b&gt;Nginx&lt;/b&gt;&lt;br&gt;Reverse Proxy | :443 HTTPS&lt;br&gt;:80 → redirect to :443" vertex="1">
+          <mxGeometry height="75" width="150" x="270" y="447" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="&lt;b&gt;FastAPI&lt;/b&gt;&lt;br&gt;REST API + Auth | :8000" vertex="1">
+
+        <!-- FastAPI -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-7" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;"
+          value="&lt;b&gt;FastAPI&lt;/b&gt;&lt;br&gt;REST API + Auth | :8000" vertex="1">
           <mxGeometry height="65" width="155" x="475" y="452" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-8" parent="1" style="text;html=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;fontSize=10;fontColor=#6c8ebf;fontStyle=2;" value="managed by systemd service" vertex="1">
-          <mxGeometry height="30" width="360" x="270" y="632" as="geometry" />
+
+        <!-- Let's Encrypt SSL cert -->
+        <mxCell id="new-letsencrypt" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;"
+          value="&lt;b&gt;Let&#39;s Encrypt SSL&lt;/b&gt;&lt;br&gt;Auto-renewing certificate" vertex="1">
+          <mxGeometry height="50" width="150" x="270" y="548" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" value="&lt;b&gt;MongoDB Atlas&lt;/b&gt;&lt;br&gt;Restaurants · Bookings · Admins" vertex="1">
+
+        <!-- Port 8000 blocked note -->
+        <mxCell id="new-port-note" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;"
+          value="&lt;b&gt;Port 8000&lt;/b&gt;&lt;br&gt;Internal only · firewall blocked" vertex="1">
+          <mxGeometry height="50" width="155" x="475" y="548" as="geometry" />
+        </mxCell>
+
+        <!-- Systemd note -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-8" parent="1"
+          style="text;html=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;fontSize=10;fontColor=#6c8ebf;fontStyle=2;"
+          value="managed by systemd service" vertex="1">
+          <mxGeometry height="30" width="360" x="270" y="710" as="geometry" />
+        </mxCell>
+
+        <!-- MongoDB Atlas -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-9" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;"
+          value="&lt;b&gt;MongoDB Atlas&lt;/b&gt;&lt;br&gt;Restaurants · Bookings · Admins" vertex="1">
           <mxGeometry height="80" width="185" x="745" y="417" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" value="&lt;b&gt;AWS SES&lt;/b&gt;&lt;br&gt;Email Service" vertex="1">
+
+        <!-- AWS SES -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-10" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;"
+          value="&lt;b&gt;AWS SES&lt;/b&gt;&lt;br&gt;Email Service" vertex="1">
           <mxGeometry height="65" width="185" x="745" y="582" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" value="&lt;b&gt;Customer Email&lt;/b&gt;&lt;br&gt;Booking Confirmation" vertex="1">
+
+        <!-- Customer Email -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-11" parent="1"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;"
+          value="&lt;b&gt;Customer Email&lt;/b&gt;&lt;br&gt;Booking Confirmation" vertex="1">
           <mxGeometry height="60" width="185" x="745" y="722" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-12" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;" target="lB45Z7F0xy6jvTgG8rFU-6" value="HTTP Request">
+
+        <!-- EDGES -->
+
+        <!-- Namecheap DNS → Browser (DNS resolve) -->
+        <mxCell id="new-dns-arrow" edge="1" parent="1" source="new-namecheap" target="lB45Z7F0xy6jvTgG8rFU-4"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;"
+          value="DNS resolve">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-13" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;" target="lB45Z7F0xy6jvTgG8rFU-7" value="Proxy :8000">
+
+        <!-- User → Nginx (HTTPS) -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-12" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-4" target="lB45Z7F0xy6jvTgG8rFU-6"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;"
+          value="HTTPS · guyperes.dev">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-14" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;" target="lB45Z7F0xy6jvTgG8rFU-9" value="Read / Write">
+
+        <!-- Nginx → FastAPI -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-13" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-6" target="lB45Z7F0xy6jvTgG8rFU-7"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;"
+          value="Proxy :8000">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-15" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;" target="lB45Z7F0xy6jvTgG8rFU-10" value="send_email()">
+
+        <!-- FastAPI → MongoDB -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-14" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-7" target="lB45Z7F0xy6jvTgG8rFU-9"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;"
+          value="Read / Write">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-16" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=11;" target="lB45Z7F0xy6jvTgG8rFU-11" value="Confirmation">
+
+        <!-- FastAPI → SES -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-15" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-7" target="lB45Z7F0xy6jvTgG8rFU-10"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;"
+          value="send_email()">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="lB45Z7F0xy6jvTgG8rFU-17" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=11;" target="lB45Z7F0xy6jvTgG8rFU-7" value="JWT Auth">
+
+        <!-- SES → Customer Email -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-16" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-10" target="lB45Z7F0xy6jvTgG8rFU-11"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=11;"
+          value="Confirmation">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+
+        <!-- Admin → FastAPI (JWT) -->
+        <mxCell id="lB45Z7F0xy6jvTgG8rFU-17" edge="1" parent="1" source="lB45Z7F0xy6jvTgG8rFU-5" target="lB45Z7F0xy6jvTgG8rFU-7"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=11;"
+          value="JWT Auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
       </root>
     </mxGraphModel>
   </diagram>

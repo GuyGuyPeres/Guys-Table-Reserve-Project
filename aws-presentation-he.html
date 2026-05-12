@@ -331,11 +331,15 @@ body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialias
     <div style="display:flex;gap:4rem;align-items:flex-start">
       <!-- Main flow -->
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0">
-        <div class="step anode" data-step="1" style="background:rgba(52,152,219,.1);border-color:rgba(52,152,219,.38);width:100%;max-width:280px"><svg class="icon" style="color:#3498db"><use href="#i-globe"/></svg> הדפדפן של הלקוח</div>
-        <div class="step aarr" data-step="2">↓</div>
+        <div class="step" data-step="1" style="width:100%;max-width:280px;display:flex;flex-direction:column;gap:.3rem">
+          <div class="anode" style="background:rgba(156,39,176,.09);border-color:rgba(156,39,176,.32);font-size:.7rem;text-align:center"><svg class="icon" style="color:#9c27b0;font-size:.85em"><use href="#i-globe"/></svg> Namecheap DNS<small>guyperes.dev → 54.236.63.157</small></div>
+          <div style="text-align:center;color:var(--gold);opacity:.45;font-size:.7rem;padding:.05rem 0">↓ DNS resolve</div>
+          <div class="anode" style="background:rgba(52,152,219,.1);border-color:rgba(52,152,219,.38);"><svg class="icon" style="color:#3498db"><use href="#i-globe"/></svg> הדפדפן של הלקוח</div>
+        </div>
+        <div class="step aarr" data-step="2">↓ <span style="font-size:.58rem;color:var(--gold);font-family:var(--fm)">HTTPS · guyperes.dev</span></div>
         <div class="step anode" data-step="3" style="background:rgba(39,174,96,.1);border-color:rgba(39,174,96,.35);width:100%;max-width:280px;position:relative">
-          <svg class="icon" style="color:#27ae60"><use href="#i-server"/></svg> Nginx on EC2 (port 80)
-          <small>פרוקסי הפוך + קבצים סטטיים</small>
+          <svg class="icon" style="color:#27ae60"><use href="#i-server"/></svg> Nginx on EC2 (port 443)
+          <small>HTTPS · Let's Encrypt SSL · :80 → redirect</small>
           <span class="iam-badge">IAM Role ✓</span>
         </div>
         <div class="step aarr" data-step="4">↓</div>
@@ -360,13 +364,13 @@ body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialias
       </div>
     </div>
     <div class="callout step" data-step="10" style="margin-top:1.2rem">
-      <svg class="icon" style="color:var(--gold)"><use href="#i-bulb"/></svg> מופע EC2 אחד. כתובת IP ציבורית אחת. <strong>$0 לחודש ב-AWS Free Tier.</strong>
+      <svg class="icon" style="color:var(--gold)"><use href="#i-bulb"/></svg> מופע EC2 אחד. <strong>guyperes.dev</strong> · HTTPS מוצפן · <strong>$0 לחודש ב-AWS Free Tier.</strong>
     </div>
   </div>
 </section>
 
 <!-- ━━━━━━━━━━ שקף 5: שלבי הפריסה ━━━━━━━━━━ -->
-<section class="slide" data-slide="5" data-steps="4"
+<section class="slide" data-slide="5" data-steps="5"
   data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
   <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=1920&q=80&auto=format&fit=crop')"></div>
   <div class="ov" style="background:linear-gradient(135deg,rgba(12,13,15,.95) 0%,rgba(0,18,8,.78) 50%,rgba(12,13,15,.93) 100%)"></div>
@@ -391,11 +395,26 @@ body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialias
         <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span><code>email_utils.py</code> נוצר וחובר לנקודת הקצה של ההזמנות</span></div>
       </div>
     </div>
-    <div class="step code" data-step="3" style="max-width:520px;font-size:.79rem">
+    <div class="step" data-step="3" style="margin-bottom:.7rem">
+      <div class="col-ttl"><svg class="icon"><use href="#i-lock"/></svg> דומיין, HTTPS ואבטחה</div>
+      <div style="display:flex;gap:2.5rem">
+        <div style="flex:1">
+          <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>דומיין <code>guyperes.dev</code> נרכש מ-Namecheap</span></div>
+          <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>DNS A Record: <code>guyperes.dev → 54.236.63.157</code></span></div>
+          <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>Let's Encrypt SSL דרך Certbot - חידוש אוטומטי</span></div>
+        </div>
+        <div style="flex:1">
+          <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>Nginx עודכן: <code>:443 HTTPS + :80 redirect</code></span></div>
+          <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>תיקון אבטחה: <code>TRUSTED_PROXIES</code> - rate limiting מוגן</span></div>
+          <div class="ci"><svg class="icon ok"><use href="#i-check"/></svg><span>Port 8000 חסום בפיירוול - Uvicorn פנימי בלבד</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="step code" data-step="4" style="max-width:520px;font-size:.79rem">
       <span class="cc">// IAM Inline Policy</span><br>
       <span id="iam-tw"></span><span class="cur-blink" id="tw-cur"></span>
     </div>
-    <div class="callout step" data-step="4" style="margin-top:.9rem;max-width:620px">
+    <div class="callout step" data-step="5" style="margin-top:.9rem;max-width:620px">
       <svg class="icon" style="color:var(--gold)"><use href="#i-lock"/></svg> <strong>אין AWS_ACCESS_KEY בשום מקום בקוד. אף פעם.</strong>
     </div>
   </div>
@@ -456,7 +475,7 @@ body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialias
 </section>
 
 <!-- ━━━━━━━━━━ שקף 7: אבטחה ועלויות ━━━━━━━━━━ -->
-<section class="slide" data-slide="7" data-steps="7"
+<section class="slide" data-slide="7" data-steps="8"
   data-notes="אם אתה קורא את זה, לחצת במקום הלא נכון">
   <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=1920&q=80&auto=format&fit=crop')"></div>
   <div class="ov"></div>
@@ -471,9 +490,10 @@ body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialias
         <div class="step bi" data-step="2"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>הרשאה מינימלית: <code style="color:var(--gold);font-family:var(--fm);font-size:.9em">ses:SendEmail</code> בלבד, <strong>שולח אחד דרך Condition Block</strong></span></div>
         <div class="step bi" data-step="3"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>קובץ <code style="color:var(--gold);font-family:var(--fm);font-size:.9em">.env</code> עם <code style="color:var(--gold);font-family:var(--fm);font-size:.9em">chmod 600</code> - <strong>רק משתמש האפליקציה קורא את הסודות</strong></span></div>
         <div class="step bi" data-step="4"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>הגבלת קצב: <strong>3 הזמנות לדקה לכל IP</strong> - מונע שימוש לרעה</span></div>
-        <div class="step bi" data-step="5"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>הגנת XSS, הגבלות CORS, כותרות CSP - <strong>הגנת Frontend מלאה</strong></span></div>
+        <div class="step bi" data-step="5"><svg class="icon ico sp"><use href="#i-lock"/></svg><span>HTTPS עם Let's Encrypt SSL - <strong>כל התעבורה מוצפנת, חידוש אוטומטי ללא עלות</strong></span></div>
+        <div class="step bi" data-step="6"><svg class="icon ico sp"><use href="#i-shield"/></svg><span>הגנת XSS, הגבלות CORS, כותרות CSP - <strong>הגנת Frontend מלאה</strong></span></div>
       </div>
-      <div class="step" data-step="6">
+      <div class="step" data-step="7">
         <div class="col-ttl"><svg class="icon"><use href="#i-dollar"/></svg> פירוט עלויות</div>
         <div class="code" style="padding:.75rem 1rem">
           <table class="ctbl">
@@ -482,11 +502,13 @@ body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialias
               <tr><td>EC2 t3.micro</td><td>750 hrs/mo × 12mo</td><td class="ok">$0</td></tr>
               <tr><td>MongoDB Atlas</td><td>512 MB forever (M0)</td><td class="ok">$0</td></tr>
               <tr><td>AWS SES</td><td>62,000 emails/month</td><td class="ok">$0</td></tr>
-              <tr class="tot"><td colspan="2"><strong>Total</strong></td><td><strong>$0 / month</strong></td></tr>
+              <tr><td>Let's Encrypt SSL</td><td>Auto-renewing</td><td class="ok">$0</td></tr>
+              <tr><td>guyperes.dev (domain)</td><td>Namecheap, 1 year</td><td style="color:var(--gold)">~$0.83/mo</td></tr>
+              <tr class="tot"><td colspan="2"><strong>Total</strong></td><td><strong>~$0.83 / month</strong></td></tr>
             </tbody>
           </table>
         </div>
-        <div class="callout step" data-step="7" style="margin-top:.75rem;font-size:.8rem">
+        <div class="callout step" data-step="8" style="margin-top:.75rem;font-size:.8rem">
           לאחר סיום המכסה החינמית: ~$7.59 לחודש &nbsp;·&nbsp; עצירת המופע בזמן אי-שימוש: ~$0.80 לחודש
         </div>
       </div>
@@ -509,6 +531,7 @@ body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialias
         <div class="ci"><span style="color:var(--success);flex-shrink:0">→</span><span>IAM Roles מסלקים קטגוריה שלמה של חולשות אישורי גישה</span></div>
         <div class="ci"><span style="color:var(--success);flex-shrink:0">→</span><span>Production שובר דברים שה-localhost אף פעם לא יגלה - רשימות IP, הרשאות, פרוקסים</span></div>
         <div class="ci"><span style="color:var(--success);flex-shrink:0">→</span><span>AWS Free Tier מאפשר לספק מוצרים איכותיים למשתמשים אמיתיים ב-$0</span></div>
+        <div class="ci"><span style="color:var(--success);flex-shrink:0">→</span><span>Let's Encrypt + Certbot = HTTPS מקצועי בחינם, תוך דקות, עם חידוש אוטומטי</span></div>
       </div>
       <div class="step card" data-step="2">
         <div class="card-ttl"><svg class="icon" style="color:var(--danger)"><use href="#i-alert"/></svg> מה היה לי קשה</div>
@@ -518,7 +541,6 @@ body{font-family:'Heebo',sans-serif;cursor:none;-webkit-font-smoothing:antialias
       </div>
       <div class="step card" data-step="3">
         <div class="card-ttl"><svg class="icon" style="color:var(--gold)"><use href="#i-rocket"/></svg> צעדים פוטנציאלים להמשך</div>
-        <div class="ci"><span style="color:var(--gold);flex-shrink:0">→</span><span>דומיין מותאם אישית + HTTPS עם Let's Encrypt</span></div>
         <div class="ci"><span style="color:var(--gold);flex-shrink:0">→</span><span>בקשת גישת Production ב-SES - שליחה לכל כתובת אימייל</span></div>
         <div class="ci"><span style="color:var(--gold);flex-shrink:0">→</span><span>Redis להגבלת קצב עקבית גם לאחר הפעלות מחדש</span></div>
         <div class="ci"><span style="color:var(--gold);flex-shrink:0">→</span><span>טיפול בשגיאות ותלונות SES להגנה על מוניטין השולח (אני לא רוצה להפוך לספאם)</span></div>
