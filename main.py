@@ -103,8 +103,12 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutdown")
 
 
+TRUSTED_PROXIES = {"127.0.0.1"}
+
 def get_client_ip(request: Request) -> str:
-    return request.headers.get("X-Real-IP") or request.client.host
+    if request.client.host in TRUSTED_PROXIES:
+        return request.headers.get("X-Real-IP", request.client.host)
+    return request.client.host
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
